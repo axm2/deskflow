@@ -126,7 +126,7 @@ public:
     virtual std::string format() const = 0;
 
     virtual void perform(const Event &) = 0;
-    virtual void setOwner(InputFilter *)
+    virtual void setFilter(InputFilter *)
     {
     }
   };
@@ -262,7 +262,7 @@ public:
   public:
     KeystrokeAction(
         IEventQueue *events, IPlatformScreen::KeyInfo *adoptedInfo, bool press, bool activeScreenOnly,
-        InputFilter *owner
+        InputFilter *filter
     );
     KeystrokeAction(KeystrokeAction const &) = delete;
     KeystrokeAction(KeystrokeAction &&) = delete;
@@ -274,9 +274,9 @@ public:
     void adoptInfo(IPlatformScreen::KeyInfo *);
     const IPlatformScreen::KeyInfo *getInfo() const;
     bool isOnPress() const;
-    void setOwner(InputFilter *owner) override
+    void setFilter(InputFilter *filter) override
     {
-      m_owner = owner;
+      m_filter = filter;
     }
 
     // Action overrides
@@ -288,7 +288,7 @@ public:
     virtual const char *formatName() const;
 
   private:
-    InputFilter *m_owner;
+    InputFilter *m_filter;
     IPlatformScreen::KeyInfo *m_keyInfo;
     bool m_press;
     IEventQueue *m_events;

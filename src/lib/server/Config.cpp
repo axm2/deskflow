@@ -978,19 +978,19 @@ void Config::parseAction(
     bool activeScreenOnly = false;
     std::set<std::string> screens;
     auto parseKeystrokeParams = [&](const std::vector<std::string> &arguments) {
-      bool screensSeen = false;
-      bool activeScreenOnlySeen = false;
+      bool screensSpecified = false;
+      bool activeScreenOnlySpecified = false;
       std::string screensArg;
       for (size_t idx = 1; idx < arguments.size(); ++idx) {
         if (deskflow::string::CaselessCmp::equal(arguments[idx], "activeScreenOnly")) {
-          if (activeScreenOnlySeen) {
+          if (activeScreenOnlySpecified) {
             throw ServerConfigReadException(s, "unexpected or duplicate parameter in keystroke action");
           }
           activeScreenOnly = true;
-          activeScreenOnlySeen = true;
-        } else if (!screensSeen) {
+          activeScreenOnlySpecified = true;
+        } else if (!screensSpecified) {
           screensArg = arguments[idx];
-          screensSeen = true;
+          screensSpecified = true;
         } else {
           throw ServerConfigReadException(
               s, "unexpected or duplicate parameter in keystroke action"
@@ -998,7 +998,7 @@ void Config::parseAction(
         }
       }
 
-      if (screensSeen) {
+      if (screensSpecified) {
         parseScreens(s, screensArg, screens);
       }
     };

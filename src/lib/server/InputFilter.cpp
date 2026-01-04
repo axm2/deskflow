@@ -421,9 +421,9 @@ void InputFilter::KeyboardBroadcastAction::perform(const Event &event)
 }
 
 InputFilter::KeystrokeAction::KeystrokeAction(
-    IEventQueue *events, IPlatformScreen::KeyInfo *info, bool press, bool activeScreenOnly, InputFilter *owner
+    IEventQueue *events, IPlatformScreen::KeyInfo *info, bool press, bool activeScreenOnly, InputFilter *filter
 )
-    : m_owner(owner),
+    : m_filter(filter),
       m_keyInfo(info),
       m_press(press),
       m_events(events),
@@ -456,7 +456,7 @@ bool InputFilter::KeystrokeAction::isOnPress() const
 InputFilter::Action *InputFilter::KeystrokeAction::clone() const
 {
   IKeyState::KeyInfo *info = IKeyState::KeyInfo::alloc(*m_keyInfo);
-  return new KeystrokeAction(m_events, info, m_press, m_activeScreenOnly, m_owner);
+  return new KeystrokeAction(m_events, info, m_press, m_activeScreenOnly, m_filter);
 }
 
 std::string InputFilter::KeystrokeAction::format() const
@@ -500,11 +500,11 @@ const char *InputFilter::KeystrokeAction::formatName() const
 
 bool InputFilter::KeystrokeAction::isActiveScreenAllowed() const
 {
-  if (!m_activeScreenOnly || m_owner == nullptr) {
+  if (!m_activeScreenOnly || m_filter == nullptr) {
     return true;
   }
 
-  const auto &activeScreen = m_owner->activeScreenName();
+  const auto &activeScreen = m_filter->activeScreenName();
   if (activeScreen.empty()) {
     return false;
   }
@@ -947,10 +947,10 @@ void InputFilter::resetActionOwners()
 {
   for (auto &rule : m_ruleList) {
     for (auto *action : rule.m_activateActions) {
-      action->setOwner(this);
+      action->setFilter(this);
     }
     for (auto *action : rule.m_deactivateActions) {
-      action->setOwner(this);
+      action->setFilter(this);
     }
   }
 }

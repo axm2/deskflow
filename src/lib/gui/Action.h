@@ -170,7 +170,7 @@ private:
   bool m_activeOnRelease = false;
   bool m_activeScreenOnly = false;
   bool m_hasScreens = false;
-  bool m_restartServer = false;
+  bool m_restartServer;
 
   inline static const QString m_commandTemplate = QStringLiteral("(%1)");
   inline static const QStringList m_actionTypeNames{
