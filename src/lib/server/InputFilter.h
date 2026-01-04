@@ -273,7 +273,9 @@ public:
     bool isOnPress() const;
     void setOwner(InputFilter *owner)
     {
-      m_owner = owner;
+      if (owner != nullptr) {
+        m_owner = owner;
+      }
     }
 
     // Action overrides

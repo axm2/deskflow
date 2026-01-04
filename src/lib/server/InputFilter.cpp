@@ -484,11 +484,9 @@ void InputFilter::KeystrokeAction::perform(const Event &event)
 
   if (m_activeScreenOnly && m_owner != nullptr) {
     const auto &activeScreen = m_owner->activeScreenName();
-    bool allowAction = !activeScreen.empty();
-    if (allowAction && !IKeyState::KeyInfo::isDefault(m_keyInfo->m_screens)) {
-      allowAction = IKeyState::KeyInfo::contains(m_keyInfo->m_screens, activeScreen);
-    }
-
+    bool allowAction = !activeScreen.empty() &&
+                       (IKeyState::KeyInfo::isDefault(m_keyInfo->m_screens) ||
+                        IKeyState::KeyInfo::contains(m_keyInfo->m_screens, activeScreen));
     if (!allowAction) {
       return;
     }

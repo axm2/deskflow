@@ -971,7 +971,7 @@ void Config::parseAction(
   if (name == "keystroke" || name == "keyDown" || name == "keyUp") {
     if (args.empty() || args.size() > 3) {
       throw ServerConfigReadException(
-          s, "syntax for action: keystroke(modifiers+key[,screens][,activeScreenOnly])"
+          s, "syntax for action: keystroke requires modifiers+key with optional screens and activeScreenOnly"
       );
     }
 
@@ -985,7 +985,7 @@ void Config::parseAction(
         parseScreens(s, args[idx], screens);
       } else {
         throw ServerConfigReadException(
-            s, "syntax for action: keystroke(modifiers+key[,screens][,activeScreenOnly])"
+            s, "unexpected or duplicate parameter in keystroke action"
         );
       }
     }
