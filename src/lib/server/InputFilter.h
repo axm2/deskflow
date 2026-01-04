@@ -126,6 +126,9 @@ public:
     virtual std::string format() const = 0;
 
     virtual void perform(const Event &) = 0;
+    virtual void setOwner(InputFilter *)
+    {
+    }
   };
 
   // LockCursorToScreenAction
@@ -271,11 +274,9 @@ public:
     void adoptInfo(IPlatformScreen::KeyInfo *);
     const IPlatformScreen::KeyInfo *getInfo() const;
     bool isOnPress() const;
-    void setOwner(InputFilter *owner)
+    void setOwner(InputFilter *owner) override
     {
-      if (owner != nullptr) {
-        m_owner = owner;
-      }
+      m_owner = owner;
     }
 
     // Action overrides
@@ -292,6 +293,7 @@ public:
     bool m_press;
     IEventQueue *m_events;
     bool m_activeScreenOnly;
+    bool isActiveScreenAllowed() const;
   };
 
   // MouseButtonAction -- modifier combinations not implemented yet

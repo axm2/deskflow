@@ -482,14 +482,8 @@ void InputFilter::KeystrokeAction::perform(const Event &event)
   using enum EventTypes;
   using Flags = Event::EventFlags;
 
-  if (m_activeScreenOnly && m_owner != nullptr) {
-    const auto &activeScreen = m_owner->activeScreenName();
-    bool allowAction = !activeScreen.empty() &&
-                       (IKeyState::KeyInfo::isDefault(m_keyInfo->m_screens) ||
-                        IKeyState::KeyInfo::contains(m_keyInfo->m_screens, activeScreen));
-    if (!allowAction) {
-      return;
-    }
+  if (!isActiveScreenAllowed()) {
+    return;
   }
 
   EventTypes type = m_press ? KeyStateKeyDown : KeyStateKeyUp;
@@ -502,6 +496,21 @@ void InputFilter::KeystrokeAction::perform(const Event &event)
 const char *InputFilter::KeystrokeAction::formatName() const
 {
   return (m_press ? "keyDown" : "keyUp");
+}
+
+bool InputFilter::KeystrokeAction::isActiveScreenAllowed() const
+{
+  if (!m_activeScreenOnly || m_owner == nullptr) {
+    return true;
+  }
+
+  const auto &activeScreen = m_owner->activeScreenName();
+  if (activeScreen.empty()) {
+    return false;
+  }
+
+  return IKeyState::KeyInfo::isDefault(m_keyInfo->m_screens) ||
+         IKeyState::KeyInfo::contains(m_keyInfo->m_screens, activeScreen);
 }
 
 InputFilter::MouseButtonAction::MouseButtonAction(
@@ -935,14 +944,10 @@ void InputFilter::resetActionOwners()
 {
   for (auto &rule : m_ruleList) {
     for (auto *action : rule.m_activateActions) {
-      if (auto *keystroke = dynamic_cast<KeystrokeAction *>(action)) {
-        keystroke->setOwner(this);
-      }
+      action->setOwner(this);
     }
     for (auto *action : rule.m_deactivateActions) {
-      if (auto *keystroke = dynamic_cast<KeystrokeAction *>(action)) {
-        keystroke->setOwner(this);
-      }
+      action->setOwner(this);
     }
   }
 }

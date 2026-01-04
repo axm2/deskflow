@@ -976,11 +976,16 @@ void Config::parseAction(
     }
 
     bool activeScreenOnly = false;
+    bool activeScreenOnlySeen = false;
     std::set<std::string> screens;
 
     for (size_t idx = 1; idx < args.size(); ++idx) {
       if (deskflow::string::CaselessCmp::equal(args[idx], "activeScreenOnly")) {
+        if (activeScreenOnlySeen) {
+          throw ServerConfigReadException(s, "unexpected or duplicate parameter in keystroke action");
+        }
         activeScreenOnly = true;
+        activeScreenOnlySeen = true;
       } else if (screens.empty()) {
         parseScreens(s, args[idx], screens);
       } else {
