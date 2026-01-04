@@ -969,29 +969,39 @@ void Config::parseAction(
   InputFilter::Action *action;
 
   if (name == "keystroke" || name == "keyDown" || name == "keyUp") {
-    if (args.size() < 1 || args.size() > 2) {
-      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens])");
+    if (args.empty() || args.size() > 3) {
+      throw ServerConfigReadException(
+          s, "syntax for action: keystroke(modifiers+key[,screens][,activeScreenOnly])"
+      );
     }
 
-    IPlatformScreen::KeyInfo *keyInfo;
-    if (args.size() == 1) {
-      keyInfo = s.parseKeystroke(args[0]);
-    } else {
-      std::set<std::string> screens;
-      parseScreens(s, args[1], screens);
-      keyInfo = s.parseKeystroke(args[0], screens);
+    bool activeScreenOnly = false;
+    std::set<std::string> screens;
+
+    for (size_t idx = 1; idx < args.size(); ++idx) {
+      if (deskflow::string::CaselessCmp::equal(args[idx], "activeScreenOnly")) {
+        activeScreenOnly = true;
+      } else if (screens.empty()) {
+        parseScreens(s, args[idx], screens);
+      } else {
+        throw ServerConfigReadException(
+            s, "syntax for action: keystroke(modifiers+key[,screens][,activeScreenOnly])"
+        );
+      }
     }
+
+    IPlatformScreen::KeyInfo *keyInfo = s.parseKeystroke(args[0], screens);
 
     if (name == "keystroke") {
       IPlatformScreen::KeyInfo *keyInfo2 = IKeyState::KeyInfo::alloc(*keyInfo);
-      action = new InputFilter::KeystrokeAction(m_events, keyInfo2, true);
+      action = new InputFilter::KeystrokeAction(m_events, keyInfo2, true, activeScreenOnly, &m_inputFilter);
       rule.adoptAction(action, true);
-      action = new InputFilter::KeystrokeAction(m_events, keyInfo, false);
+      action = new InputFilter::KeystrokeAction(m_events, keyInfo, false, activeScreenOnly, &m_inputFilter);
       activate = false;
     } else if (name == "keyDown") {
-      action = new InputFilter::KeystrokeAction(m_events, keyInfo, true);
+      action = new InputFilter::KeystrokeAction(m_events, keyInfo, true, activeScreenOnly, &m_inputFilter);
     } else {
-      action = new InputFilter::KeystrokeAction(m_events, keyInfo, false);
+      action = new InputFilter::KeystrokeAction(m_events, keyInfo, false, activeScreenOnly, &m_inputFilter);
     }
   }
 

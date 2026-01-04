@@ -420,10 +420,14 @@ void InputFilter::KeyboardBroadcastAction::perform(const Event &event)
   );
 }
 
-InputFilter::KeystrokeAction::KeystrokeAction(IEventQueue *events, IPlatformScreen::KeyInfo *info, bool press)
-    : m_keyInfo(info),
+InputFilter::KeystrokeAction::KeystrokeAction(
+    IEventQueue *events, IPlatformScreen::KeyInfo *info, bool press, bool activeScreenOnly, InputFilter *owner
+)
+    : m_owner(owner),
+      m_keyInfo(info),
       m_press(press),
-      m_events(events)
+      m_events(events),
+      m_activeScreenOnly(activeScreenOnly)
 {
   // do nothing
 }
@@ -452,33 +456,39 @@ bool InputFilter::KeystrokeAction::isOnPress() const
 InputFilter::Action *InputFilter::KeystrokeAction::clone() const
 {
   IKeyState::KeyInfo *info = IKeyState::KeyInfo::alloc(*m_keyInfo);
-  return new KeystrokeAction(m_events, info, m_press);
+  return new KeystrokeAction(m_events, info, m_press, m_activeScreenOnly, m_owner);
 }
 
 std::string InputFilter::KeystrokeAction::format() const
 {
   const char *type = formatName();
 
-  if (m_keyInfo->m_screens[0] == '\0') {
-    return deskflow::string::sprintf(
-        "%s(%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str()
-    );
-  } else if (m_keyInfo->m_screens[0] == '*') {
-    return deskflow::string::sprintf(
-        "%s(%s,*)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str()
-    );
-  } else {
-    return deskflow::string::sprintf(
-        "%s(%s,%.*s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(),
-        strnlen(m_keyInfo->m_screens + 1, SIZE_MAX) - 1, m_keyInfo->m_screens + 1
-    );
+  std::string args = deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask);
+  if (m_keyInfo->m_screens[0] == '*') {
+    args.append(",*");
+  } else if (!IKeyState::KeyInfo::isDefault(m_keyInfo->m_screens)) {
+    auto length = static_cast<int>(strnlen(m_keyInfo->m_screens + 1, SIZE_MAX) - 1);
+    args.append(deskflow::string::sprintf(",%.*s", length, m_keyInfo->m_screens + 1));
   }
+  if (m_activeScreenOnly) {
+    args.append(",activeScreenOnly");
+  }
+
+  return deskflow::string::sprintf("%s(%s)", type, args.c_str());
 }
 
 void InputFilter::KeystrokeAction::perform(const Event &event)
 {
   using enum EventTypes;
   using Flags = Event::EventFlags;
+
+  if (m_activeScreenOnly && m_owner != nullptr) {
+    const auto &activeScreen = m_owner->activeScreenName();
+    if (!activeScreen.empty() && !IKeyState::KeyInfo::isDefault(m_keyInfo->m_screens) &&
+        !IKeyState::KeyInfo::contains(m_keyInfo->m_screens, activeScreen)) {
+      return;
+    }
+  }
 
   EventTypes type = m_press ? KeyStateKeyDown : KeyStateKeyUp;
 
@@ -760,8 +770,12 @@ InputFilter::InputFilter(IEventQueue *events) : m_events(events)
   // do nothing
 }
 
-InputFilter::InputFilter(const InputFilter &x) : m_ruleList(x.m_ruleList), m_events(x.m_events)
+InputFilter::InputFilter(const InputFilter &x)
+    : m_ruleList(x.m_ruleList),
+      m_events(x.m_events),
+      m_activeScreenName(x.m_activeScreenName)
 {
+  resetActionOwners();
   setPrimaryClient(x.m_primaryClient);
 }
 
@@ -777,6 +791,8 @@ InputFilter &InputFilter::operator=(const InputFilter &x)
     setPrimaryClient(nullptr);
 
     m_ruleList = x.m_ruleList;
+    m_activeScreenName = x.m_activeScreenName;
+    resetActionOwners();
 
     setPrimaryClient(oldClient);
   }
@@ -786,6 +802,7 @@ InputFilter &InputFilter::operator=(const InputFilter &x)
 void InputFilter::addFilterRule(const Rule &rule)
 {
   m_ruleList.push_back(rule);
+  resetActionOwners();
   if (m_primaryClient != nullptr) {
     m_ruleList.back().enable(m_primaryClient);
   }
@@ -910,4 +927,20 @@ void InputFilter::handleEvent(const Event &event)
 
   // not handled so pass through
   m_events->addEvent(std::move(myEvent));
+}
+
+void InputFilter::resetActionOwners()
+{
+  for (auto &rule : m_ruleList) {
+    for (auto *action : rule.m_activateActions) {
+      if (auto *keystroke = dynamic_cast<KeystrokeAction *>(action)) {
+        keystroke->setOwner(this);
+      }
+    }
+    for (auto *action : rule.m_deactivateActions) {
+      if (auto *keystroke = dynamic_cast<KeystrokeAction *>(action)) {
+        keystroke->setOwner(this);
+      }
+    }
+  }
 }

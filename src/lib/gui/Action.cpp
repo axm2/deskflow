@@ -34,6 +34,8 @@ QString Action::text() const
         commandArgs.append(QStringLiteral(",%1").arg(screenList));
       } else
         commandArgs.append(QStringLiteral(",*"));
+      if (m_activeScreenOnly)
+        commandArgs.append(QStringLiteral(",activeScreenOnly"));
     }
     text.append(m_commandTemplate.arg(commandArgs));
   } break;
@@ -74,6 +76,7 @@ void Action::loadSettings(QSettings &settings)
   setSwitchDirection(settings.value(SettingsKeys::SwitchDirection, static_cast<int>(SwitchDirection::left)).toInt());
   setLockCursorMode(settings.value(SettingsKeys::LockToScreen, static_cast<int>(LockCursorMode::toggle)).toInt());
   setActiveOnRelease(settings.value(SettingsKeys::ActiveOnRelease, false).toBool());
+  setActiveScreenOnly(settings.value(SettingsKeys::ActiveScreenOnly, false).toBool());
   setHaveScreens(settings.value(SettingsKeys::HasScreens, false).toBool());
   setRestartServer(settings.value(SettingsKeys::RestartServer, false).toBool());
 }
@@ -94,6 +97,7 @@ void Action::saveSettings(QSettings &settings) const
   settings.setValue(SettingsKeys::SwitchDirection, switchDirection());
   settings.setValue(SettingsKeys::LockToScreen, lockCursorMode());
   settings.setValue(SettingsKeys::ActiveOnRelease, activeOnRelease());
+  settings.setValue(SettingsKeys::ActiveScreenOnly, activeScreenOnly());
   settings.setValue(SettingsKeys::HasScreens, haveScreens());
   settings.setValue(SettingsKeys::RestartServer, restartServer());
 }

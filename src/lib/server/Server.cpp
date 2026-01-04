@@ -128,6 +128,7 @@ Server::Server(ServerConfig &config, PrimaryClient *primaryClient, deskflow::Scr
   // enable primary client
   m_primaryClient->enable();
   m_inputFilter->setPrimaryClient(m_primaryClient);
+  m_inputFilter->setActiveScreenName(getName(m_active));
 
   // Determine if scroll lock is already set. If so, lock the cursor to the
   // primary screen (unless the user has disabled lock to screen in config)
@@ -454,6 +455,7 @@ void Server::switchScreen(BaseClientProxy *dst, int32_t x, int32_t y, bool forSc
 
     // cut over
     m_active = dst;
+    m_inputFilter->setActiveScreenName(getName(m_active));
 
     // increment enter sequence number
     ++m_seqNum;
@@ -2043,6 +2045,7 @@ void Server::forceLeaveClient(const BaseClientProxy *client)
 
     // cut over
     m_active = m_primaryClient;
+    m_inputFilter->setActiveScreenName(getName(m_active));
 
     // enter new screen (unless we already have because of the
     // screen saver)
