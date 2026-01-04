@@ -509,8 +509,11 @@ bool InputFilter::KeystrokeAction::isActiveScreenAllowed() const
     return false;
   }
 
-  return IKeyState::KeyInfo::isDefault(m_keyInfo->m_screens) ||
-         IKeyState::KeyInfo::contains(m_keyInfo->m_screens, activeScreen);
+  if (IKeyState::KeyInfo::isDefault(m_keyInfo->m_screens)) {
+    return false;
+  }
+
+  return IKeyState::KeyInfo::contains(m_keyInfo->m_screens, activeScreen);
 }
 
 InputFilter::MouseButtonAction::MouseButtonAction(

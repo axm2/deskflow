@@ -976,24 +976,34 @@ void Config::parseAction(
     }
 
     bool activeScreenOnly = false;
-    bool activeScreenOnlySeen = false;
     std::set<std::string> screens;
-
-    for (size_t idx = 1; idx < args.size(); ++idx) {
-      if (deskflow::string::CaselessCmp::equal(args[idx], "activeScreenOnly")) {
-        if (activeScreenOnlySeen) {
-          throw ServerConfigReadException(s, "unexpected or duplicate parameter in keystroke action");
+    auto parseKeystrokeParams = [&](const std::vector<std::string> &arguments) {
+      bool screensSeen = false;
+      bool activeScreenOnlySeen = false;
+      std::string screensArg;
+      for (size_t idx = 1; idx < arguments.size(); ++idx) {
+        if (deskflow::string::CaselessCmp::equal(arguments[idx], "activeScreenOnly")) {
+          if (activeScreenOnlySeen) {
+            throw ServerConfigReadException(s, "unexpected or duplicate parameter in keystroke action");
+          }
+          activeScreenOnly = true;
+          activeScreenOnlySeen = true;
+        } else if (!screensSeen) {
+          screensArg = arguments[idx];
+          screensSeen = true;
+        } else {
+          throw ServerConfigReadException(
+              s, "unexpected or duplicate parameter in keystroke action"
+          );
         }
-        activeScreenOnly = true;
-        activeScreenOnlySeen = true;
-      } else if (screens.empty()) {
-        parseScreens(s, args[idx], screens);
-      } else {
-        throw ServerConfigReadException(
-            s, "unexpected or duplicate parameter in keystroke action"
-        );
       }
-    }
+
+      if (screensSeen) {
+        parseScreens(s, screensArg, screens);
+      }
+    };
+
+    parseKeystrokeParams(args);
 
     IPlatformScreen::KeyInfo *keyInfo = s.parseKeystroke(args[0], screens);
 
