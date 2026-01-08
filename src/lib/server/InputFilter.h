@@ -14,6 +14,7 @@
 #include "deskflow/MouseTypes.h"
 
 #include <set>
+#include <string>
 
 class PrimaryClient;
 class Event;
@@ -125,6 +126,9 @@ public:
     virtual std::string format() const = 0;
 
     virtual void perform(const Event &) = 0;
+    virtual void setFilter(InputFilter *)
+    {
+    }
   };
 
   // LockCursorToScreenAction
@@ -256,7 +260,10 @@ public:
   class KeystrokeAction : public Action
   {
   public:
-    KeystrokeAction(IEventQueue *events, IPlatformScreen::KeyInfo *adoptedInfo, bool press);
+    KeystrokeAction(
+        IEventQueue *events, IPlatformScreen::KeyInfo *adoptedInfo, bool press, bool activeScreenOnly,
+        InputFilter *filter
+    );
     KeystrokeAction(KeystrokeAction const &) = delete;
     KeystrokeAction(KeystrokeAction &&) = delete;
     ~KeystrokeAction() override;
@@ -267,6 +274,10 @@ public:
     void adoptInfo(IPlatformScreen::KeyInfo *);
     const IPlatformScreen::KeyInfo *getInfo() const;
     bool isOnPress() const;
+    void setFilter(InputFilter *filter) override
+    {
+      m_filter = filter;
+    }
 
     // Action overrides
     Action *clone() const override;
@@ -277,9 +288,12 @@ public:
     virtual const char *formatName() const;
 
   private:
+    InputFilter *m_filter;
     IPlatformScreen::KeyInfo *m_keyInfo;
     bool m_press;
     IEventQueue *m_events;
+    bool m_activeScreenOnly;
+    bool isActiveScreenAllowed() const;
   };
 
   // MouseButtonAction -- modifier combinations not implemented yet
@@ -388,6 +402,15 @@ public:
   // if client is nullptr.
   void setPrimaryClient(PrimaryClient *client);
 
+  void setActiveScreenName(const std::string &activeScreenName)
+  {
+    m_activeScreenName = activeScreenName;
+  }
+  const std::string &activeScreenName() const
+  {
+    return m_activeScreenName;
+  }
+
   // convert rules to a string
   std::string format(const std::string_view &linePrefix) const;
 
@@ -400,9 +423,11 @@ public:
 private:
   // event handling
   void handleEvent(const Event &);
+  void resetActionOwners();
 
 private:
   RuleList m_ruleList;
   PrimaryClient *m_primaryClient = nullptr;
   IEventQueue *m_events;
+  std::string m_activeScreenName;
 };
