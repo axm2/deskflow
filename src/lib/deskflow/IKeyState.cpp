@@ -25,11 +25,7 @@ IKeyState::IKeyState(const IEventQueue *)
 
 IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(KeyID id, KeyModifierMask mask, KeyButton button, int32_t count)
 {
-#if SYSAPI_WIN32
   auto *info = (KeyInfo *)malloc(sizeof(KeyInfo));
-#else
-  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo));
-#endif
   info->m_key = id;
   info->m_mask = mask;
   info->m_button = button;

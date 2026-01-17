@@ -31,6 +31,9 @@ namespace deskflow::server {
 const auto kSynergyProtocolOption = "synergy";
 const auto kBarrierProtocolOption = "barrier";
 
+// Action modifiers used in configuration files
+const auto kActiveScreenOnlyModifier = "activeScreenOnly";
+
 //
 // Config
 //
@@ -984,9 +987,10 @@ void Config::parseAction(
       // args.size() == 3
       std::set<std::string> screens;
       parseScreens(s, args[1], screens);
-      if (args[2] != "activeScreenOnly") {
+      if (args[2] != kActiveScreenOnlyModifier) {
         throw ServerConfigReadException(
-            s, "invalid modifier in keystroke action: expected 'activeScreenOnly', got '" + args[2] + "'"
+            s, std::string("invalid modifier in keystroke action: expected '") + kActiveScreenOnlyModifier +
+                   "', got '" + args[2] + "'"
         );
       }
       keyInfo = s.parseKeystroke(args[0], screens, true);
