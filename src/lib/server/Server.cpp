@@ -304,6 +304,20 @@ std::string Server::getName(const BaseClientProxy *client) const
   return name;
 }
 
+bool Server::shouldSkipActionForActiveScreen(bool activeScreenOnly, const char *screens) const
+{
+  // If activeScreenOnly is set, check if any of the target screens matches the active screen
+  if (activeScreenOnly && screens && !IKeyState::KeyInfo::isDefault(screens)) {
+    std::string activeName = getName(m_active);
+    if (!IKeyState::KeyInfo::contains(screens, activeName)) {
+      // Active screen doesn't match target screens, should skip the action
+      LOG_DEBUG1("activeScreenOnly: skipping keystroke, active=%s doesn't match targets", activeName.c_str());
+      return true;
+    }
+  }
+  return false;
+}
+
 uint32_t Server::getActivePrimarySides() const
 {
   using enum DirectionMask;
@@ -1538,14 +1552,9 @@ void Server::onKeyDown(
   LOG_DEBUG1("onKeyDown id=%d mask=0x%04x button=0x%04x lang=%s", id, mask, button, lang.c_str());
   assert(m_active != nullptr);
 
-  // If activeScreenOnly is set, check if any of the target screens matches the active screen
-  if (activeScreenOnly && screens && !IKeyState::KeyInfo::isDefault(screens)) {
-    std::string activeName = getName(m_active);
-    if (!IKeyState::KeyInfo::contains(screens, activeName)) {
-      // Active screen doesn't match target screens, don't perform the action
-      LOG_DEBUG1("activeScreenOnly: skipping keystroke, active=%s doesn't match targets", activeName.c_str());
-      return;
-    }
+  // Check if action should be skipped based on activeScreenOnly modifier
+  if (shouldSkipActionForActiveScreen(activeScreenOnly, screens)) {
+    return;
   }
 
   // relay
@@ -1571,14 +1580,9 @@ void Server::onKeyUp(KeyID id, KeyModifierMask mask, KeyButton button, const cha
   LOG_DEBUG1("onKeyUp id=%d mask=0x%04x button=0x%04x", id, mask, button);
   assert(m_active != nullptr);
 
-  // If activeScreenOnly is set, check if any of the target screens matches the active screen
-  if (activeScreenOnly && screens && !IKeyState::KeyInfo::isDefault(screens)) {
-    std::string activeName = getName(m_active);
-    if (!IKeyState::KeyInfo::contains(screens, activeName)) {
-      // Active screen doesn't match target screens, don't perform the action
-      LOG_DEBUG1("activeScreenOnly: skipping keystroke, active=%s doesn't match targets", activeName.c_str());
-      return;
-    }
+  // Check if action should be skipped based on activeScreenOnly modifier
+  if (shouldSkipActionForActiveScreen(activeScreenOnly, screens)) {
+    return;
   }
 
   // relay

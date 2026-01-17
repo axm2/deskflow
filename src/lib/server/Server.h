@@ -204,6 +204,9 @@ private:
   // get canonical name of client
   std::string getName(const BaseClientProxy *) const;
 
+  // check if action should be skipped based on activeScreenOnly modifier
+  bool shouldSkipActionForActiveScreen(bool activeScreenOnly, const char *screens) const;
+
   // get the sides of the primary screen that have neighbors
   uint32_t getActivePrimarySides() const;
 
