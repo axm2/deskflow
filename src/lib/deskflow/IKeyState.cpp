@@ -25,7 +25,11 @@ IKeyState::IKeyState(const IEventQueue *)
 
 IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(KeyID id, KeyModifierMask mask, KeyButton button, int32_t count)
 {
-  auto *info = new KeyInfo();
+#if SYSAPI_WIN32
+  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo));
+#else
+  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo));
+#endif
   info->m_key = id;
   info->m_mask = mask;
   info->m_button = button;
@@ -44,12 +48,7 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
   const char *buffer = screens.c_str();
 
   // build structure
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
   auto *info = (KeyInfo *)malloc(sizeof(KeyInfo) + screens.size());
-#else
-  auto *info = new KeyInfo();
-#endif
 
   info->m_key = id;
   info->m_mask = mask;
@@ -70,12 +69,7 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
   const char *buffer = screens.c_str();
 
   // build structure
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
   auto *info = (KeyInfo *)malloc(sizeof(KeyInfo) + screens.size());
-#else
-  auto *info = new KeyInfo();
-#endif
 
   info->m_key = id;
   info->m_mask = mask;
@@ -91,12 +85,7 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(const KeyInfo &x)
 {
   auto bufferLen = strnlen(x.m_screensBuffer, SIZE_MAX);
 
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
-  auto info = (KeyInfo *)malloc(sizeof(KeyInfo) + bufferLen);
-#else
-  auto *info = new KeyInfo();
-#endif
+  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo) + bufferLen);
 
   info->m_key = x.m_key;
   info->m_mask = x.m_mask;

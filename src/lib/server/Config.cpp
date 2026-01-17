@@ -984,11 +984,12 @@ void Config::parseAction(
       // args.size() == 3
       std::set<std::string> screens;
       parseScreens(s, args[1], screens);
-      bool activeScreenOnly = (args[2] == "activeScreenOnly");
-      if (!activeScreenOnly && !args[2].empty()) {
-        throw ServerConfigReadException(s, "invalid modifier in keystroke action: expected 'activeScreenOnly'");
+      if (args[2] != "activeScreenOnly") {
+        throw ServerConfigReadException(
+            s, "invalid modifier in keystroke action: expected 'activeScreenOnly', got '" + args[2] + "'"
+        );
       }
-      keyInfo = s.parseKeystroke(args[0], screens, activeScreenOnly);
+      keyInfo = s.parseKeystroke(args[0], screens, true);
     }
 
     if (name == "keystroke") {
