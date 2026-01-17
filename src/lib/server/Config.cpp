@@ -973,7 +973,7 @@ void Config::parseAction(
 
   if (name == "keystroke" || name == "keyDown" || name == "keyUp") {
     if (args.size() < 1 || args.size() > 3) {
-      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens[,activeScreenOnly]])");
+      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens][,activeScreenOnly])");
     }
 
     IPlatformScreen::KeyInfo *keyInfo;
@@ -989,8 +989,11 @@ void Config::parseAction(
       parseScreens(s, args[1], screens);
       if (args[2] != kActiveScreenOnlyModifier) {
         throw ServerConfigReadException(
-            s, std::string("invalid modifier in keystroke action: expected '") + kActiveScreenOnlyModifier +
-                   "', got '" + args[2] + "'"
+            s,
+            deskflow::string::sprintf(
+                "invalid modifier in keystroke action: expected '%s', got '%s'", kActiveScreenOnlyModifier,
+                args[2].c_str()
+            )
         );
       }
       keyInfo = s.parseKeystroke(args[0], screens, true);
