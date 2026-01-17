@@ -458,19 +458,20 @@ InputFilter::Action *InputFilter::KeystrokeAction::clone() const
 std::string InputFilter::KeystrokeAction::format() const
 {
   const char *type = formatName();
+  std::string modifier = m_keyInfo->m_activeScreenOnly ? ",activeScreenOnly" : "";
 
   if (m_keyInfo->m_screens[0] == '\0') {
     return deskflow::string::sprintf(
-        "%s(%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str()
+        "%s(%s%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(), modifier.c_str()
     );
   } else if (m_keyInfo->m_screens[0] == '*') {
     return deskflow::string::sprintf(
-        "%s(%s,*)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str()
+        "%s(%s,*%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(), modifier.c_str()
     );
   } else {
     return deskflow::string::sprintf(
-        "%s(%s,%.*s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(),
-        strnlen(m_keyInfo->m_screens + 1, SIZE_MAX) - 1, m_keyInfo->m_screens + 1
+        "%s(%s,%.*s%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(),
+        strnlen(m_keyInfo->m_screens + 1, SIZE_MAX) - 1, m_keyInfo->m_screens + 1, modifier.c_str()
     );
   }
 }

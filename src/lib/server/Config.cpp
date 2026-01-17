@@ -969,17 +969,26 @@ void Config::parseAction(
   InputFilter::Action *action;
 
   if (name == "keystroke" || name == "keyDown" || name == "keyUp") {
-    if (args.size() < 1 || args.size() > 2) {
-      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens])");
+    if (args.size() < 1 || args.size() > 3) {
+      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens[,activeScreenOnly]])");
     }
 
     IPlatformScreen::KeyInfo *keyInfo;
     if (args.size() == 1) {
       keyInfo = s.parseKeystroke(args[0]);
-    } else {
+    } else if (args.size() == 2) {
       std::set<std::string> screens;
       parseScreens(s, args[1], screens);
       keyInfo = s.parseKeystroke(args[0], screens);
+    } else {
+      // args.size() == 3
+      std::set<std::string> screens;
+      parseScreens(s, args[1], screens);
+      bool activeScreenOnly = (args[2] == "activeScreenOnly");
+      if (!activeScreenOnly && !args[2].empty()) {
+        throw ServerConfigReadException(s, "invalid modifier in keystroke action: expected 'activeScreenOnly'");
+      }
+      keyInfo = s.parseKeystroke(args[0], screens, activeScreenOnly);
     }
 
     if (name == "keystroke") {
@@ -2001,6 +2010,13 @@ IPlatformScreen::KeyInfo *ConfigReadContext::parseKeystroke(const std::string &k
 IPlatformScreen::KeyInfo *
 ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<std::string> &screens) const
 {
+  return parseKeystroke(keystroke, screens, false);
+}
+
+IPlatformScreen::KeyInfo *
+ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<std::string> &screens, bool activeScreenOnly
+) const
+{
   std::string s = keystroke;
 
   KeyModifierMask mask;
@@ -2017,7 +2033,7 @@ ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<s
     throw ServerConfigReadException(*this, "missing key and/or modifiers in keystroke");
   }
 
-  return IPlatformScreen::KeyInfo::alloc(key, mask, 0, 0, screens);
+  return IPlatformScreen::KeyInfo::alloc(key, mask, 0, 0, screens, activeScreenOnly);
 }
 
 IPlatformScreen::ButtonInfo ConfigReadContext::parseMouse(const std::string &mouse) const
