@@ -413,16 +413,17 @@ You can use both the ''switchDelay'' and ''switchDoubleTap'' options at the same
 
 Actions are two lists of individual actions separated by commas. The two lists are separated by a '';'' (semicolon). Either list can be empty and if the second list is empty then the semicolon is optional. The first list lists actions to take when the condition becomes true (e.g. the hot key or mouse button is pressed) and the second lists actions to take when the condition becomes false (e.g. the hot key or button is released). The condition becoming true is called activation and becoming false is called deactivation. Allowed individual actions are:
 
-* `keystroke(key[,screens])`
+* `keystroke(key[,screens[,activeScreenOnly]])`
 
-* `keyDown(key[,screens])`
+* `keyDown(key[,screens[,activeScreenOnly]])`
 
-* `keyUp(key[,screens])`
+* `keyUp(key[,screens[,activeScreenOnly]])`
 
 
 : Synthesizes the modifiers and key given in ''key'' which has the same form as described in the ''keystroke'' option. If given, ''screens'' lists the screen or screens to direct the event to, regardless of the active screen. If not given then the event is directed to the active screen only.
 : ''keyDown'' synthesizes a key press and ''keyUp'' synthesizes a key release. ''keystroke'' synthesizes a key press on activation and a release on deactivation and is equivalent to a ''keyDown'' on activation and ''keyUp'' on deactivation.
 : ''screens'' is either ''*'' (asterisk) to indicate all screens or a '':'' (colon) separated list of screen names. (Note that the screen name must have already been encountered in the configuration file so you'll probably want to put ''actions'' at the bottom of the file.)
+: The optional ''activeScreenOnly'' modifier restricts the action to only execute when the currently active screen matches one of the target screens. This allows creating conditional hotkeys that only trigger when focus is on specific clients. For example: `keystroke(Control+right,macbookair.lan,activeScreenOnly)` will only send `Control+right` when the active screen is `macbookair.lan`, otherwise the hotkey is ignored.
 
 * `mousebutton(button)`
 * `mouseDown(button)`
@@ -681,6 +682,34 @@ section: options
 <!--		keystroke(control+super+left) = switchInDirection(left) -->
 end
 ```
+
+### Conditional Hotkey with activeScreenOnly
+
+The following example shows how to use the `activeScreenOnly` modifier to create conditional hotkeys that only trigger when the focus is on a specific screen:
+
+```
+section: screens
+	server:
+	macbookair.lan:
+end
+section: links
+	server:
+		right = macbookair.lan
+	macbookair.lan:
+		left = server
+end
+section: options
+	# This hotkey remaps Control+right to Super+right, but ONLY when focus is on macbookair.lan
+	# When focus is on the server, Control+right works normally (no remapping)
+	keystroke(Control+right) = keystroke(Super+right,macbookair.lan,activeScreenOnly)
+end
+```
+
+In this configuration:
+- When the active screen is `macbookair.lan` and you press `Control+right`, it will send `Super+right` to that client
+- When the active screen is the server (or any other client), pressing `Control+right` will work normally without any remapping
+
+This is useful for creating screen-specific key mappings without affecting other screens.
 
 ### AltGr key
 
