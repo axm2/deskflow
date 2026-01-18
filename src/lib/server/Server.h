@@ -328,7 +328,8 @@ private:
   // event processing
   void onClipboardChanged(const BaseClientProxy *sender, ClipboardID id, uint32_t seqNum);
   void onScreensaver(bool activated);
-  void onKeyDown(KeyID, KeyModifierMask, KeyButton, const std::string &, const char *screens, bool activeScreenOnly = false);
+  void
+  onKeyDown(KeyID, KeyModifierMask, KeyButton, const std::string &, const char *screens, bool activeScreenOnly = false);
   void onKeyUp(KeyID, KeyModifierMask, KeyButton, const char *screens, bool activeScreenOnly = false);
   void onKeyRepeat(KeyID, KeyModifierMask, int32_t, KeyButton, const std::string &);
   void onMouseDown(ButtonID);

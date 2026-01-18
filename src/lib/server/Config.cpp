@@ -989,11 +989,10 @@ void Config::parseAction(
       parseScreens(s, args[1], screens);
       if (args[2] != kActiveScreenOnlyModifier) {
         throw ServerConfigReadException(
-            s,
-            deskflow::string::sprintf(
-                "invalid modifier in keystroke action: expected '%s', got '%s'", kActiveScreenOnlyModifier,
-                args[2].c_str()
-            )
+            s, deskflow::string::sprintf(
+                   "invalid modifier in keystroke action: expected '%s', got '%s'", kActiveScreenOnlyModifier,
+                   args[2].c_str()
+               )
         );
       }
       keyInfo = s.parseKeystroke(args[0], screens, true);
@@ -2021,8 +2020,8 @@ ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<s
   return parseKeystroke(keystroke, screens, false);
 }
 
-IPlatformScreen::KeyInfo *
-ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<std::string> &screens, bool activeScreenOnly
+IPlatformScreen::KeyInfo *ConfigReadContext::parseKeystroke(
+    const std::string &keystroke, const std::set<std::string> &screens, bool activeScreenOnly
 ) const
 {
   std::string s = keystroke;

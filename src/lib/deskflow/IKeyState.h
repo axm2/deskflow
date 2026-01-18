@@ -32,8 +32,10 @@ public:
   public:
     static KeyInfo *alloc(KeyID, KeyModifierMask, KeyButton, int32_t count);
     static KeyInfo *alloc(KeyID, KeyModifierMask, KeyButton, int32_t count, const std::set<std::string> &destinations);
-    static KeyInfo *
-    alloc(KeyID, KeyModifierMask, KeyButton, int32_t count, const std::set<std::string> &destinations, bool activeScreenOnly);
+    static KeyInfo *alloc(
+        KeyID, KeyModifierMask, KeyButton, int32_t count, const std::set<std::string> &destinations,
+        bool activeScreenOnly
+    );
     static KeyInfo *alloc(const KeyInfo &);
 
     static bool isDefault(const char *screens);

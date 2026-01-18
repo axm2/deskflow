@@ -462,11 +462,13 @@ std::string InputFilter::KeystrokeAction::format() const
 
   if (m_keyInfo->m_screens[0] == '\0') {
     return deskflow::string::sprintf(
-        "%s(%s%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(), modifierSuffix.c_str()
+        "%s(%s%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(),
+        modifierSuffix.c_str()
     );
   } else if (m_keyInfo->m_screens[0] == '*') {
     return deskflow::string::sprintf(
-        "%s(%s,*%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(), modifierSuffix.c_str()
+        "%s(%s,*%s)", type, deskflow::KeyMap::formatKey(m_keyInfo->m_key, m_keyInfo->m_mask).c_str(),
+        modifierSuffix.c_str()
     );
   } else {
     return deskflow::string::sprintf(
