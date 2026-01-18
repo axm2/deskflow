@@ -29,7 +29,6 @@ inline static const QString ActiveOnRelease = QStringLiteral("activeOnRelease");
 inline static const QString HasScreens = QStringLiteral("hasScreens");
 inline static const QString RestartServer = QStringLiteral("restartServer");
 inline static const QString ActiveScreenOnly = QStringLiteral("activeScreenOnly");
-inline static const QString DisableGlobalHotkeyRegister = QStringLiteral("disableGlobalHotkeyRegister");
 } // namespace SettingsKeys
 
 class Action
@@ -112,10 +111,6 @@ public:
   {
     return m_activeScreenOnly;
   }
-  bool disableGlobalHotkeyRegister() const
-  {
-    return m_disableGlobalHotkeyRegister;
-  }
 
   bool operator==(const Action &a) const = default;
 
@@ -164,10 +159,6 @@ protected:
   {
     m_activeScreenOnly = b;
   }
-  void setDisableGlobalHotkeyRegister(bool b)
-  {
-    m_disableGlobalHotkeyRegister = b;
-  }
 
 private:
   KeySequence m_keySequence;
@@ -180,7 +171,6 @@ private:
   bool m_hasScreens = false;
   bool m_restartServer = false;
   bool m_activeScreenOnly = false;
-  bool m_disableGlobalHotkeyRegister = false;
 
   inline static const QString m_commandTemplate = QStringLiteral("(%1)");
   inline static const QStringList m_actionTypeNames{

@@ -25,7 +25,7 @@ IKeyState::IKeyState(const IEventQueue *)
 
 IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(KeyID id, KeyModifierMask mask, KeyButton button, int32_t count)
 {
-  auto *info = new KeyInfo();
+  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo));
   info->m_key = id;
   info->m_mask = mask;
   info->m_button = button;
