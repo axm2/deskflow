@@ -83,6 +83,29 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
   return info;
 }
 
+IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
+    KeyID id, KeyModifierMask mask, KeyButton button, int32_t count, const std::set<std::string> &destinations,
+    bool activeScreenOnly, KeyID originalKey, KeyModifierMask originalMask
+)
+{
+  std::string screens = join(destinations);
+  const char *buffer = screens.c_str();
+
+  // build structure
+  auto *info = static_cast<KeyInfo *>(malloc(sizeof(KeyInfo) + screens.size()));
+
+  info->m_key = id;
+  info->m_mask = mask;
+  info->m_button = button;
+  info->m_count = count;
+  info->m_activeScreenOnly = activeScreenOnly;
+  info->m_originalKey = originalKey;
+  info->m_originalMask = originalMask;
+  info->m_screens = info->m_screensBuffer;
+  std::copy(buffer, buffer + screens.size() + 1, info->m_screensBuffer);
+  return info;
+}
+
 IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(const KeyInfo &x)
 {
   auto bufferLen = strnlen(x.m_screensBuffer, SIZE_MAX);
