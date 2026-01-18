@@ -133,7 +133,9 @@ void ActionDialog::actionTypeChanged(int index)
   ui->comboSwitchToScreen->setVisible(index == ActionTypes::SwitchTo);
   ui->comboSwitchInDirection->setVisible(index == ActionTypes::SwitchInDirection);
   ui->comboLockCursorToScreen->setVisible(index == ActionTypes::ModifyCursorLock);
-  ui->m_pCheckBoxActiveScreenOnly->setVisible(isKeyAction(index) && !ui->keySequenceWidget->keySequence().isMouseButton());
+  ui->m_pCheckBoxActiveScreenOnly->setVisible(
+      isKeyAction(index) && !ui->keySequenceWidget->keySequence().isMouseButton()
+  );
   QTimer::singleShot(1, this, &ActionDialog::updateSize);
 }
 

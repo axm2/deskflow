@@ -14,13 +14,13 @@ QString Hotkey::text() const
 {
   QString hotkeyText = m_keySequence.isMouseButton() ? kMousebutton.arg(m_keySequence.toString())
                                                      : kKeystroke.arg(m_keySequence.toString());
-  
+
   // Add disableGlobalHotkeyRegister option if set (only for keystroke, not mousebutton)
   if (!m_keySequence.isMouseButton() && m_disableGlobalHotkeyRegister) {
     // Insert the option before the closing parenthesis
     hotkeyText.insert(hotkeyText.length() - 1, QStringLiteral(",disableGlobalHotkeyRegister"));
   }
-  
+
   return hotkeyText;
 }
 
@@ -38,7 +38,7 @@ void Hotkey::loadSettings(QSettings &settings)
   }
 
   settings.endArray();
-  
+
   m_disableGlobalHotkeyRegister = settings.value(kDisableGlobalHotkeyRegister, false).toBool();
 }
 
@@ -52,7 +52,7 @@ void Hotkey::saveSettings(QSettings &settings) const
     m_actions.at(i).saveSettings(settings);
   }
   settings.endArray();
-  
+
   settings.setValue(kDisableGlobalHotkeyRegister, m_disableGlobalHotkeyRegister);
 }
 

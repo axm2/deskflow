@@ -34,7 +34,7 @@ QString Action::text() const
         commandArgs.append(QStringLiteral(",%1").arg(screenList));
       } else
         commandArgs.append(QStringLiteral(",*"));
-      
+
       // Add activeScreenOnly option if set
       if (activeScreenOnly()) {
         commandArgs.append(QStringLiteral(",activeScreenOnly"));

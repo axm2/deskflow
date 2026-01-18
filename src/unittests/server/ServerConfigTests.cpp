@@ -192,7 +192,7 @@ end
 
   std::istringstream configStream(configStr);
   Config config(nullptr);
-  
+
   // Parse the config - this should succeed without throwing
   try {
     config.read(configStream);
