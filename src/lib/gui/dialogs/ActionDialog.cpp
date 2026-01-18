@@ -39,6 +39,7 @@ ActionDialog::ActionDialog(QWidget *parent, const ServerConfig &config, Hotkey &
 
   ui->comboActionType->setCurrentIndex(m_action.type());
   ui->comboTriggerOn->setCurrentIndex(m_action.activeOnRelease());
+  ui->checkActiveScreenOnly->setChecked(m_action.activeScreenOnly());
 
   for (const Screen &screen : config.screens()) {
     if (screen.isNull())
@@ -91,6 +92,7 @@ void ActionDialog::accept()
     m_action.typeScreenNames().clear();
 
   m_action.setHaveScreens(screenCount);
+  m_action.setActiveScreenOnly(ui->checkActiveScreenOnly->isChecked());
 
   m_action.setSwitchScreenName(ui->comboSwitchToScreen->currentText().remove(tr("Switch to ")));
   m_action.setSwitchDirection(ui->comboSwitchInDirection->currentIndex());
