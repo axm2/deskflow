@@ -2025,8 +2025,7 @@ ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<s
   return parseKeystroke(keystroke, screens, false);
 }
 
-IPlatformScreen::KeyInfo *
-ConfigReadContext::parseKeystroke(
+IPlatformScreen::KeyInfo *ConfigReadContext::parseKeystroke(
     const std::string &keystroke, const std::set<std::string> &screens, bool activeScreenOnly
 ) const
 {
