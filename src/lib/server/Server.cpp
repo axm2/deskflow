@@ -205,7 +205,11 @@ bool Server::setConfig(const ServerConfig &config)
   // ScrollLock as a hotkey.
   if (!m_disableLockToScreen && !m_config->hasLockToScreenAction()) {
     IPlatformScreen::KeyInfo *key = IPlatformScreen::KeyInfo::alloc(kKeyScrollLock, 0, 0, 0);
-    InputFilter::Rule rule(new InputFilter::KeystrokeCondition(m_events, key, true));
+    // Create a copy using new so that KeystrokeCondition can safely delete it
+    IPlatformScreen::KeyInfo *keyCopy = new IPlatformScreen::KeyInfo(*key);
+    // Free the original KeyInfo using the appropriate deallocator
+    std::free(key);
+    InputFilter::Rule rule(new InputFilter::KeystrokeCondition(m_events, keyCopy, true));
     rule.adoptAction(new InputFilter::LockCursorToScreenAction(m_events), true);
     m_inputFilter->addFilterRule(rule);
   }
