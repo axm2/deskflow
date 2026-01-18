@@ -1005,6 +1005,10 @@ void Config::parseAction(
       if (const auto *keystrokeCondition = dynamic_cast<const InputFilter::KeystrokeCondition *>(condition)) {
         keyInfo->m_originalKey = keystrokeCondition->getKey();
         keyInfo->m_originalMask = keystrokeCondition->getMask();
+      } else {
+        // Ensure deterministic behavior if the condition is not a KeystrokeCondition
+        keyInfo->m_originalKey = 0;
+        keyInfo->m_originalMask = 0;
       }
     }
 
