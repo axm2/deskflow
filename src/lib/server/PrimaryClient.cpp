@@ -139,10 +139,10 @@ void PrimaryClient::setClipboardDirty(ClipboardID id, bool dirty)
   m_clipboardDirty[id] = dirty;
 }
 
-void PrimaryClient::keyDown(KeyID key, KeyModifierMask mask, KeyButton button, const std::string &)
+void PrimaryClient::keyDown(KeyID key, KeyModifierMask mask, KeyButton button, const std::string &lang)
 {
   if (m_fakeInputCount > 0) {
-    m_screen->keyDown(key, mask, button);
+    m_screen->keyDown(key, mask, button, lang);
   }
 }
 
