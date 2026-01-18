@@ -1199,20 +1199,12 @@ void Config::parseKeystrokeConditionOptions(
     const ConfigReadContext &c, const std::string &s, bool &disableGlobalHotkeyRegister
 ) const
 {
-  if (s == "disableGlobalHotkeyRegister") {
-    disableGlobalHotkeyRegister = true;
-  } else {
-    disableGlobalHotkeyRegister = false;
-  }
+  disableGlobalHotkeyRegister = (s == "disableGlobalHotkeyRegister");
 }
 
 void Config::parseKeystrokeActionOptions(const ConfigReadContext &c, const std::string &s, bool &activeScreenOnly) const
 {
-  if (s == "activeScreenOnly") {
-    activeScreenOnly = true;
-  } else {
-    activeScreenOnly = false;
-  }
+  activeScreenOnly = (s == "activeScreenOnly");
 }
 
 const char *Config::getOptionName(OptionID id)
