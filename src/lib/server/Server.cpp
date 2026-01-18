@@ -1251,7 +1251,10 @@ void Server::handleKeyDownEvent(const Event &event)
 void Server::handleKeyUpEvent(const Event &event)
 {
   auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
-  onKeyUp(info->m_key, info->m_mask, info->m_button, info->m_screens, info->m_activeScreenOnly, info->m_originalKey, info->m_originalMask);
+  onKeyUp(
+      info->m_key, info->m_mask, info->m_button, info->m_screens, info->m_activeScreenOnly, info->m_originalKey,
+      info->m_originalMask
+  );
 }
 
 void Server::handleKeyRepeatEvent(const Event &event)
@@ -1549,8 +1552,8 @@ void Server::onScreensaver(bool activated)
 }
 
 void Server::onKeyDown(
-    KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang, const char *screens, bool activeScreenOnly,
-    KeyID originalKey, KeyModifierMask originalMask
+    KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang, const char *screens,
+    bool activeScreenOnly, KeyID originalKey, KeyModifierMask originalMask
 )
 {
   LOG_DEBUG1("onKeyDown id=%d mask=0x%04x button=0x%04x lang=%s", id, mask, button, lang.c_str());

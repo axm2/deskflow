@@ -50,7 +50,7 @@ public:
     KeyButton m_button;
     int32_t m_count;
     bool m_activeScreenOnly;
-    KeyID m_originalKey;        // Original hotkey (for activeScreenOnly fallback)
+    KeyID m_originalKey;            // Original hotkey (for activeScreenOnly fallback)
     KeyModifierMask m_originalMask; // Original hotkey mask (for activeScreenOnly fallback)
     char *m_screens;
     char m_screensBuffer[1];
