@@ -403,7 +403,7 @@ end
 |clipboardSharing| `true` or `false`|If set to ''true'' then clipboard sharing will be enabled and the ''clipboardSharingSize'' setting will be used. If set to false, then clipboard sharing will be disabled and the the ''clipboardSharingSize'' setting will be ignored.|
 |clipboardSharingSize| integer (N)| Deskflow will send a maximum of `N` kilobytes of clipboard data to another computer when the mouse transitions to that computer.|
 |win32KeepForeground | `true` or `false`| If set to ''true'' (the default), Deskflow will grab the foreground focus on a Windows server (thereby putting all other windows in the background) upon switching to a client. If set to ''false'', it will leave the currently foreground window in the foreground. Deskflow grabs the focus to avoid issues with other apps interfering with Deskflow's ability to read the hardware inputs. |
-|keystroke(key) | actions | Binds the ''key'' combination key to the given ''actions''. ''key'' is an optional list of modifiers (''shift'', ''control'', ''alt'', ''meta'' or ''super'') optionally followed by a character or a key name, all separated by + (plus signs). You must have either modifiers or a character/key name or both. See below for `valid key names` and `actions`. Keyboard hot keys are handled while the cursor is on the primary screen and secondary screens. Separate actions can be assigned to press and release.|
+|keystroke(key[,options]) | actions | Binds the ''key'' combination key to the given ''actions''. ''key'' is an optional list of modifiers (''shift'', ''control'', ''alt'', ''meta'' or ''super'') optionally followed by a character or a key name, all separated by + (plus signs). You must have either modifiers or a character/key name or both. See below for `valid key names` and `actions`. Keyboard hot keys are handled while the cursor is on the primary screen and secondary screens. Separate actions can be assigned to press and release. The optional ''options'' parameter can be ''disableGlobalHotkeyRegister'' to allow apps on the server to respond to the original keystroke without OS blocking.|
 |mousebutton(button) | actions| Binds the modifier and mouse button combination ''button'' to the given ''actions''. ''button'' is an optional list of modifiers (''shift'', ''control'', ''alt'', ''meta'' or ''super'') followed by a button number. The primary button (the left button for right handed users) is button 1, the middle button is 2, etc. Actions can be found below. Mouse button actions are not handled while the cursor is on the primary screen. You cannot use these to perform an action while on the primary screen. Separate actions can be assigned to press and release.|
 
 
@@ -413,16 +413,17 @@ You can use both the ''switchDelay'' and ''switchDoubleTap'' options at the same
 
 Actions are two lists of individual actions separated by commas. The two lists are separated by a '';'' (semicolon). Either list can be empty and if the second list is empty then the semicolon is optional. The first list lists actions to take when the condition becomes true (e.g. the hot key or mouse button is pressed) and the second lists actions to take when the condition becomes false (e.g. the hot key or button is released). The condition becoming true is called activation and becoming false is called deactivation. Allowed individual actions are:
 
-* `keystroke(key[,screens])`
+* `keystroke(key[,screens[,options]])`
 
-* `keyDown(key[,screens])`
+* `keyDown(key[,screens[,options]])`
 
-* `keyUp(key[,screens])`
+* `keyUp(key[,screens[,options]])`
 
 
 : Synthesizes the modifiers and key given in ''key'' which has the same form as described in the ''keystroke'' option. If given, ''screens'' lists the screen or screens to direct the event to, regardless of the active screen. If not given then the event is directed to the active screen only.
 : ''keyDown'' synthesizes a key press and ''keyUp'' synthesizes a key release. ''keystroke'' synthesizes a key press on activation and a release on deactivation and is equivalent to a ''keyDown'' on activation and ''keyUp'' on deactivation.
 : ''screens'' is either ''*'' (asterisk) to indicate all screens or a '':'' (colon) separated list of screen names. (Note that the screen name must have already been encountered in the configuration file so you'll probably want to put ''actions'' at the bottom of the file.)
+: The optional ''options'' parameter can be ''activeScreenOnly'' to perform the action only when the specified screen is currently active. This is useful for creating screen-specific hotkeys that only work when that screen is in focus.
 
 * `mousebutton(button)`
 * `mouseDown(button)`
@@ -679,6 +680,40 @@ end
 section: options
 		keystroke(control+super+right) = switchInDirection(right) # Switch screens on keypress 
 <!--		keystroke(control+super+left) = switchInDirection(left) -->
+end
+```
+
+### Active Screen Only Hotkeys
+
+The following example shows how to use the `activeScreenOnly` option to create screen-specific hotkeys. This is useful when you want different hotkey behaviors on different screens.
+
+```
+# Physical monitor arrangement
+#  +----------+----------+
+#  | Server   | Mac-Mini |
+#  |          |          |
+#  +----------+----------+ 
+
+section: screens
+	Server:
+	Mac-Mini:
+end
+
+section: links
+	Server:
+		right = Mac-Mini
+	Mac-Mini:
+		left = Server
+end
+
+section: options
+	# Map Control key combinations to Super (Command) key on Mac, only when Mac is active
+	# Using disableGlobalHotkeyRegister allows the server to still use Control shortcuts normally
+	keystroke(Control+Left,disableGlobalHotkeyRegister) = keystroke(Super+Left,Mac-Mini,activeScreenOnly)
+	keystroke(Control+Right,disableGlobalHotkeyRegister) = keystroke(Super+Right,Mac-Mini,activeScreenOnly)
+	keystroke(Control+Up,disableGlobalHotkeyRegister) = keystroke(Super+Up,Mac-Mini,activeScreenOnly)
+	keystroke(Control+c,disableGlobalHotkeyRegister) = keystroke(Super+c,Mac-Mini,activeScreenOnly)
+	keystroke(Control+v,disableGlobalHotkeyRegister) = keystroke(Super+v,Mac-Mini,activeScreenOnly)
 end
 ```
 
