@@ -51,13 +51,8 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
   std::string screens = join(destinations);
   const char *buffer = screens.c_str();
 
-  // build structure
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
+  // build structure - allocate extra space for the screens string
   auto *info = (KeyInfo *)malloc(sizeof(KeyInfo) + screens.size());
-#else
-  auto *info = new KeyInfo();
-#endif
 
   info->m_key = id;
   info->m_mask = mask;
@@ -73,12 +68,8 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(const KeyInfo &x)
 {
   auto bufferLen = strnlen(x.m_screensBuffer, SIZE_MAX);
 
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
-  auto info = (KeyInfo *)malloc(sizeof(KeyInfo) + bufferLen);
-#else
-  auto *info = new KeyInfo();
-#endif
+  // allocate extra space for the screens string
+  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo) + bufferLen);
 
   info->m_key = x.m_key;
   info->m_mask = x.m_mask;
