@@ -998,6 +998,16 @@ void Config::parseAction(
       keyInfo = s.parseKeystroke(args[0], screens, true);
     }
 
+    // If activeScreenOnly is set, store the original hotkey from the condition
+    // so we can fall back to it when the active screen doesn't match
+    if (keyInfo->m_activeScreenOnly) {
+      const InputFilter::Condition *condition = rule.getCondition();
+      if (const auto *keystrokeCondition = dynamic_cast<const InputFilter::KeystrokeCondition *>(condition)) {
+        keyInfo->m_originalKey = keystrokeCondition->getKey();
+        keyInfo->m_originalMask = keystrokeCondition->getMask();
+      }
+    }
+
     if (name == "keystroke") {
       IPlatformScreen::KeyInfo *keyInfo2 = IKeyState::KeyInfo::alloc(*keyInfo);
       action = new InputFilter::KeystrokeAction(m_events, keyInfo2, true);
