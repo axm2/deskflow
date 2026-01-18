@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>344</width>
-    <height>86</height>
+    <height>120</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,6 +23,16 @@
    </item>
    <item>
     <widget class="KeySequenceWidget" name="m_pKeySequenceWidgetHotkey"/>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="m_pCheckBoxDisableGlobalHotkeyRegister">
+     <property name="text">
+      <string>Disable global hotkey registration (allow server to use this key)</string>
+     </property>
+     <property name="toolTip">
+      <string>When enabled, the hotkey will not be registered as a global hotkey with the OS, allowing the server to handle the key normally when focused</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

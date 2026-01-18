@@ -62,6 +62,8 @@ ActionDialog::ActionDialog(QWidget *parent, const ServerConfig &config, Hotkey &
   ui->comboSwitchToScreen->setVisible(false);
   ui->comboSwitchInDirection->setVisible(false);
   ui->comboLockCursorToScreen->setVisible(false);
+  ui->m_pCheckBoxActiveScreenOnly->setVisible(false);
+  ui->m_pCheckBoxActiveScreenOnly->setChecked(m_action.activeScreenOnly());
 
   actionTypeChanged(ui->comboActionType->currentIndex());
 }
@@ -97,6 +99,7 @@ void ActionDialog::accept()
   m_action.setLockCursorMode(ui->comboLockCursorToScreen->currentIndex());
   m_action.setActiveOnRelease(ui->comboTriggerOn->currentIndex());
   m_action.setRestartServer(ui->comboActionType->currentIndex() == ActionTypes::RestartServer);
+  m_action.setActiveScreenOnly(ui->m_pCheckBoxActiveScreenOnly->isChecked());
 
   QDialog::accept();
 }
@@ -112,6 +115,7 @@ void ActionDialog::updateSize()
 void ActionDialog::keySequenceChanged()
 {
   ui->listScreens->setEnabled(!ui->keySequenceWidget->keySequence().isMouseButton());
+  ui->m_pCheckBoxActiveScreenOnly->setVisible(!ui->keySequenceWidget->keySequence().isMouseButton());
   ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(canSave());
 }
 
@@ -129,6 +133,7 @@ void ActionDialog::actionTypeChanged(int index)
   ui->comboSwitchToScreen->setVisible(index == ActionTypes::SwitchTo);
   ui->comboSwitchInDirection->setVisible(index == ActionTypes::SwitchInDirection);
   ui->comboLockCursorToScreen->setVisible(index == ActionTypes::ModifyCursorLock);
+  ui->m_pCheckBoxActiveScreenOnly->setVisible(isKeyAction(index) && !ui->keySequenceWidget->keySequence().isMouseButton());
   QTimer::singleShot(1, this, &ActionDialog::updateSize);
 }
 

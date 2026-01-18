@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>706</width>
-    <height>256</height>
+    <height>290</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -165,6 +165,16 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="m_pCheckBoxActiveScreenOnly">
+     <property name="text">
+      <string>Only fire when target screen is active (activeScreenOnly)</string>
+     </property>
+     <property name="toolTip">
+      <string>When enabled, this action will only fire when the specified screen(s) are currently active</string>
+     </property>
     </widget>
    </item>
    <item>
