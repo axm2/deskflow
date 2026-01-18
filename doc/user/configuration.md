@@ -687,6 +687,8 @@ end
 
 The following example shows how to use the `activeScreenOnly` option to create screen-specific hotkeys. This is useful when you want different hotkey behaviors on different screens.
 
+**Important limitation**: When using `activeScreenOnly` with the primary/server screen as a target, the action may not work if it uses the same keystroke as the condition. This is because the primary client registers the original keystroke with the OS as a hotkey, which blocks Deskflow from creating fake events for them. To work around this, ensure that actions targeting the server screen use different keystrokes than the condition, or only target client screens.
+
 ```
 # Physical monitor arrangement
 #  +----------+----------+

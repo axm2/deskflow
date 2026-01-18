@@ -1199,12 +1199,38 @@ void Config::parseKeystrokeConditionOptions(
     const ConfigReadContext &c, const std::string &s, bool &disableGlobalHotkeyRegister
 ) const
 {
-  disableGlobalHotkeyRegister = (s == "disableGlobalHotkeyRegister");
+  // Default to false when no option is provided
+  disableGlobalHotkeyRegister = false;
+
+  if (s.empty()) {
+    return;
+  }
+
+  if (s == "disableGlobalHotkeyRegister") {
+    disableGlobalHotkeyRegister = true;
+    return;
+  }
+
+  // Unknown option string: fail fast to surface configuration errors
+  throw ServerConfigReadException(c, "unknown keystroke condition option \"%{1}\"", s);
 }
 
 void Config::parseKeystrokeActionOptions(const ConfigReadContext &c, const std::string &s, bool &activeScreenOnly) const
 {
-  activeScreenOnly = (s == "activeScreenOnly");
+  // Default to false when no option is provided
+  activeScreenOnly = false;
+
+  if (s.empty()) {
+    return;
+  }
+
+  if (s == "activeScreenOnly") {
+    activeScreenOnly = true;
+    return;
+  }
+
+  // Unknown option string: fail fast to surface configuration errors
+  throw ServerConfigReadException(c, "unknown keystroke action option \"%{1}\"", s);
 }
 
 const char *Config::getOptionName(OptionID id)
