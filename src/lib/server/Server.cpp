@@ -1566,7 +1566,12 @@ void Server::onKeyDown(
     // on non-target screens.
     if (originalKey != 0) {
       LOG_DEBUG1("activeScreenOnly: forwarding original keystroke to active screen");
-      m_active->keyDown(originalKey, originalMask, button, lang);
+      // If active screen is the server (primary), synthesize directly to avoid fake input counter
+      if (m_active == m_primaryClient) {
+        m_screen->keyDown(originalKey, originalMask, button, lang);
+      } else {
+        m_active->keyDown(originalKey, originalMask, button, lang);
+      }
     }
     return;
   }
@@ -1604,7 +1609,12 @@ void Server::onKeyUp(
     // on non-target screens.
     if (originalKey != 0) {
       LOG_DEBUG1("activeScreenOnly: forwarding original keystroke to active screen");
-      m_active->keyUp(originalKey, originalMask, button);
+      // If active screen is the server (primary), synthesize directly to avoid fake input counter
+      if (m_active == m_primaryClient) {
+        m_screen->keyUp(originalKey, originalMask, button);
+      } else {
+        m_active->keyUp(originalKey, originalMask, button);
+      }
     }
     return;
   }
