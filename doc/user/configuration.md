@@ -717,6 +717,40 @@ section: options
 end
 ```
 
+For multiple clients, you can use a colon-separated list of screen names or chain actions with commas:
+
+```
+# Physical monitor arrangement
+#  +----------+----------+----------+
+#  | Server   | Mac-Mini | Macbook  |
+#  |          |          |          |
+#  +----------+----------+----------+ 
+
+section: screens
+	Server:
+	Mac-Mini:
+	Macbook:
+end
+
+section: links
+	Server:
+		right = Mac-Mini
+	Mac-Mini:
+		left = Server
+		right = Macbook
+	Macbook:
+		left = Mac-Mini
+end
+
+section: options
+	# Option 1: Use colon-separated screen list (applies same action to multiple screens)
+	keystroke(Control+c,disableGlobalHotkeyRegister) = keystroke(Super+c,Mac-Mini:Macbook,activeScreenOnly)
+	
+	# Option 2: Chain multiple actions with commas (different actions per screen)
+	keystroke(Control+Left,disableGlobalHotkeyRegister) = keystroke(Super+Left,Mac-Mini,activeScreenOnly),keystroke(Super+Left,Macbook,activeScreenOnly)
+end
+```
+
 ### AltGr key
 
 The following screen config allows the mapping for ''Alt'' to ''AltGr''. Although this may not work, see [https://github.com/deskflow/deskflow-core/issues/4411 bug #4411].
