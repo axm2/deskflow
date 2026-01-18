@@ -32,6 +32,14 @@ public:
   public:
     static KeyInfo *alloc(KeyID, KeyModifierMask, KeyButton, int32_t count);
     static KeyInfo *alloc(KeyID, KeyModifierMask, KeyButton, int32_t count, const std::set<std::string> &destinations);
+    static KeyInfo *alloc(
+        KeyID, KeyModifierMask, KeyButton, int32_t count, const std::set<std::string> &destinations,
+        bool activeScreenOnly
+    );
+    static KeyInfo *alloc(
+        KeyID, KeyModifierMask, KeyButton, int32_t count, const std::set<std::string> &destinations,
+        bool activeScreenOnly, KeyID originalKey, KeyModifierMask originalMask
+    );
     static KeyInfo *alloc(const KeyInfo &);
 
     static bool isDefault(const char *screens);
@@ -45,6 +53,9 @@ public:
     KeyModifierMask m_mask;
     KeyButton m_button;
     int32_t m_count;
+    bool m_activeScreenOnly;
+    KeyID m_originalKey;            // Original hotkey (for activeScreenOnly fallback)
+    KeyModifierMask m_originalMask; // Original hotkey mask (for activeScreenOnly fallback)
     char *m_screens;
     char m_screensBuffer[1];
   };

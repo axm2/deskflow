@@ -31,6 +31,9 @@ namespace deskflow::server {
 const auto kSynergyProtocolOption = "synergy";
 const auto kBarrierProtocolOption = "barrier";
 
+// Action modifiers used in configuration files
+const auto kActiveScreenOnlyModifier = "activeScreenOnly";
+
 //
 // Config
 //
@@ -969,17 +972,44 @@ void Config::parseAction(
   InputFilter::Action *action;
 
   if (name == "keystroke" || name == "keyDown" || name == "keyUp") {
-    if (args.size() < 1 || args.size() > 2) {
-      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens])");
+    if (args.size() < 1 || args.size() > 3) {
+      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens][,activeScreenOnly])");
     }
 
     IPlatformScreen::KeyInfo *keyInfo;
     if (args.size() == 1) {
       keyInfo = s.parseKeystroke(args[0]);
-    } else {
+    } else if (args.size() == 2) {
       std::set<std::string> screens;
       parseScreens(s, args[1], screens);
       keyInfo = s.parseKeystroke(args[0], screens);
+    } else {
+      // args.size() == 3
+      std::set<std::string> screens;
+      parseScreens(s, args[1], screens);
+      if (args[2] != kActiveScreenOnlyModifier) {
+        throw ServerConfigReadException(
+            s, deskflow::string::sprintf(
+                   "invalid modifier in keystroke action: expected '%s', got '%s'", kActiveScreenOnlyModifier,
+                   args[2].c_str()
+               )
+        );
+      }
+      keyInfo = s.parseKeystroke(args[0], screens, true);
+    }
+
+    // If activeScreenOnly is set, store the original hotkey from the condition
+    // so we can fall back to it when the active screen doesn't match
+    if (keyInfo->m_activeScreenOnly) {
+      const InputFilter::Condition *condition = rule.getCondition();
+      if (const auto *keystrokeCondition = dynamic_cast<const InputFilter::KeystrokeCondition *>(condition)) {
+        keyInfo->m_originalKey = keystrokeCondition->getKey();
+        keyInfo->m_originalMask = keystrokeCondition->getMask();
+      } else {
+        // Ensure deterministic behavior if the condition is not a KeystrokeCondition
+        keyInfo->m_originalKey = 0;
+        keyInfo->m_originalMask = 0;
+      }
     }
 
     if (name == "keystroke") {
@@ -2001,6 +2031,13 @@ IPlatformScreen::KeyInfo *ConfigReadContext::parseKeystroke(const std::string &k
 IPlatformScreen::KeyInfo *
 ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<std::string> &screens) const
 {
+  return parseKeystroke(keystroke, screens, false);
+}
+
+IPlatformScreen::KeyInfo *ConfigReadContext::parseKeystroke(
+    const std::string &keystroke, const std::set<std::string> &screens, bool activeScreenOnly
+) const
+{
   std::string s = keystroke;
 
   KeyModifierMask mask;
@@ -2017,7 +2054,7 @@ ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<s
     throw ServerConfigReadException(*this, "missing key and/or modifiers in keystroke");
   }
 
-  return IPlatformScreen::KeyInfo::alloc(key, mask, 0, 0, screens);
+  return IPlatformScreen::KeyInfo::alloc(key, mask, 0, 0, screens, activeScreenOnly);
 }
 
 IPlatformScreen::ButtonInfo ConfigReadContext::parseMouse(const std::string &mouse) const

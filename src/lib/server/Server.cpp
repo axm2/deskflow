@@ -304,6 +304,20 @@ std::string Server::getName(const BaseClientProxy *client) const
   return name;
 }
 
+bool Server::shouldSkipActionForActiveScreen(bool activeScreenOnly, const char *screens) const
+{
+  // If activeScreenOnly is set, check if any of the target screens matches the active screen
+  if (activeScreenOnly && screens && !IKeyState::KeyInfo::isDefault(screens)) {
+    std::string activeName = getName(m_active);
+    if (!IKeyState::KeyInfo::contains(screens, activeName)) {
+      // Active screen doesn't match target screens, should skip the action
+      LOG_DEBUG1("activeScreenOnly: skipping keystroke, active=%s doesn't match targets", activeName.c_str());
+      return true;
+    }
+  }
+  return false;
+}
+
 uint32_t Server::getActivePrimarySides() const
 {
   using enum DirectionMask;
@@ -1228,13 +1242,19 @@ void Server::handleKeyDownEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
   auto lang = AppUtil::instance().getCurrentLanguageCode();
-  onKeyDown(info->m_key, info->m_mask, info->m_button, lang, info->m_screens);
+  onKeyDown(
+      info->m_key, info->m_mask, info->m_button, lang, info->m_screens, info->m_activeScreenOnly, info->m_originalKey,
+      info->m_originalMask
+  );
 }
 
 void Server::handleKeyUpEvent(const Event &event)
 {
   auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
-  onKeyUp(info->m_key, info->m_mask, info->m_button, info->m_screens);
+  onKeyUp(
+      info->m_key, info->m_mask, info->m_button, info->m_screens, info->m_activeScreenOnly, info->m_originalKey,
+      info->m_originalMask
+  );
 }
 
 void Server::handleKeyRepeatEvent(const Event &event)
@@ -1531,10 +1551,30 @@ void Server::onScreensaver(bool activated)
   }
 }
 
-void Server::onKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang, const char *screens)
+void Server::onKeyDown(
+    KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang, const char *screens,
+    bool activeScreenOnly, KeyID originalKey, KeyModifierMask originalMask
+)
 {
   LOG_DEBUG1("onKeyDown id=%d mask=0x%04x button=0x%04x lang=%s", id, mask, button, lang.c_str());
   assert(m_active != nullptr);
+
+  // Check if action should be skipped based on activeScreenOnly modifier
+  if (shouldSkipActionForActiveScreen(activeScreenOnly, screens)) {
+    // When activeScreenOnly check fails, send the ORIGINAL hotkey to the active screen
+    // instead of the remapped key. This allows the original hotkey to work normally
+    // on non-target screens.
+    if (originalKey != 0) {
+      LOG_DEBUG1("activeScreenOnly: forwarding original keystroke to active screen");
+      // If active screen is the server (primary), synthesize directly to avoid fake input counter
+      if (m_active == m_primaryClient) {
+        m_screen->keyDown(originalKey, originalMask, button, lang);
+      } else {
+        m_active->keyDown(originalKey, originalMask, button, lang);
+      }
+    }
+    return;
+  }
 
   // relay
   if (!m_keyboardBroadcasting && IKeyState::KeyInfo::isDefault(screens)) {
@@ -1554,10 +1594,30 @@ void Server::onKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const s
   }
 }
 
-void Server::onKeyUp(KeyID id, KeyModifierMask mask, KeyButton button, const char *screens)
+void Server::onKeyUp(
+    KeyID id, KeyModifierMask mask, KeyButton button, const char *screens, bool activeScreenOnly, KeyID originalKey,
+    KeyModifierMask originalMask
+)
 {
   LOG_DEBUG1("onKeyUp id=%d mask=0x%04x button=0x%04x", id, mask, button);
   assert(m_active != nullptr);
+
+  // Check if action should be skipped based on activeScreenOnly modifier
+  if (shouldSkipActionForActiveScreen(activeScreenOnly, screens)) {
+    // When activeScreenOnly check fails, send the ORIGINAL hotkey to the active screen
+    // instead of the remapped key. This allows the original hotkey to work normally
+    // on non-target screens.
+    if (originalKey != 0) {
+      LOG_DEBUG1("activeScreenOnly: forwarding original keystroke to active screen");
+      // If active screen is the server (primary), synthesize directly to avoid fake input counter
+      if (m_active == m_primaryClient) {
+        m_screen->keyUp(originalKey, originalMask, button);
+      } else {
+        m_active->keyUp(originalKey, originalMask, button);
+      }
+    }
+    return;
+  }
 
   // relay
   if (!m_keyboardBroadcasting && IKeyState::KeyInfo::isDefault(screens)) {

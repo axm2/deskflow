@@ -25,11 +25,14 @@ IKeyState::IKeyState(const IEventQueue *)
 
 IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(KeyID id, KeyModifierMask mask, KeyButton button, int32_t count)
 {
-  auto *info = new KeyInfo();
+  auto *info = static_cast<KeyInfo *>(malloc(sizeof(KeyInfo)));
   info->m_key = id;
   info->m_mask = mask;
   info->m_button = button;
   info->m_count = count;
+  info->m_activeScreenOnly = false;
+  info->m_originalKey = 0;
+  info->m_originalMask = 0;
   info->m_screens = nullptr;
   info->m_screensBuffer[0] = '\0';
   return info;
@@ -43,17 +46,61 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
   const char *buffer = screens.c_str();
 
   // build structure
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
-  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo) + screens.size());
-#else
-  auto *info = new KeyInfo();
-#endif
+  auto *info = static_cast<KeyInfo *>(malloc(sizeof(KeyInfo) + screens.size()));
 
   info->m_key = id;
   info->m_mask = mask;
   info->m_button = button;
   info->m_count = count;
+  info->m_activeScreenOnly = false;
+  info->m_originalKey = 0;
+  info->m_originalMask = 0;
+  info->m_screens = info->m_screensBuffer;
+  std::copy(buffer, buffer + screens.size() + 1, info->m_screensBuffer);
+  return info;
+}
+
+IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
+    KeyID id, KeyModifierMask mask, KeyButton button, int32_t count, const std::set<std::string> &destinations,
+    bool activeScreenOnly
+)
+{
+  std::string screens = join(destinations);
+  const char *buffer = screens.c_str();
+
+  // build structure
+  auto *info = static_cast<KeyInfo *>(malloc(sizeof(KeyInfo) + screens.size()));
+
+  info->m_key = id;
+  info->m_mask = mask;
+  info->m_button = button;
+  info->m_count = count;
+  info->m_activeScreenOnly = activeScreenOnly;
+  info->m_originalKey = 0;
+  info->m_originalMask = 0;
+  info->m_screens = info->m_screensBuffer;
+  std::copy(buffer, buffer + screens.size() + 1, info->m_screensBuffer);
+  return info;
+}
+
+IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
+    KeyID id, KeyModifierMask mask, KeyButton button, int32_t count, const std::set<std::string> &destinations,
+    bool activeScreenOnly, KeyID originalKey, KeyModifierMask originalMask
+)
+{
+  std::string screens = join(destinations);
+  const char *buffer = screens.c_str();
+
+  // build structure
+  auto *info = static_cast<KeyInfo *>(malloc(sizeof(KeyInfo) + screens.size()));
+
+  info->m_key = id;
+  info->m_mask = mask;
+  info->m_button = button;
+  info->m_count = count;
+  info->m_activeScreenOnly = activeScreenOnly;
+  info->m_originalKey = originalKey;
+  info->m_originalMask = originalMask;
   info->m_screens = info->m_screensBuffer;
   std::copy(buffer, buffer + screens.size() + 1, info->m_screensBuffer);
   return info;
@@ -63,17 +110,15 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(const KeyInfo &x)
 {
   auto bufferLen = strnlen(x.m_screensBuffer, SIZE_MAX);
 
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
-  auto info = (KeyInfo *)malloc(sizeof(KeyInfo) + bufferLen);
-#else
-  auto *info = new KeyInfo();
-#endif
+  auto *info = static_cast<KeyInfo *>(malloc(sizeof(KeyInfo) + bufferLen));
 
   info->m_key = x.m_key;
   info->m_mask = x.m_mask;
   info->m_button = x.m_button;
   info->m_count = x.m_count;
+  info->m_activeScreenOnly = x.m_activeScreenOnly;
+  info->m_originalKey = x.m_originalKey;
+  info->m_originalMask = x.m_originalMask;
   info->m_screens = x.m_screens ? info->m_screensBuffer : nullptr;
   memcpy(info->m_screensBuffer, x.m_screensBuffer, bufferLen + 1);
   return info;
@@ -107,7 +152,7 @@ bool IKeyState::KeyInfo::equal(const KeyInfo *a, const KeyInfo *b)
 {
   return (
       a->m_key == b->m_key && a->m_mask == b->m_mask && a->m_button == b->m_button && a->m_count == b->m_count &&
-      strcmp(a->m_screensBuffer, b->m_screensBuffer) == 0
+      a->m_activeScreenOnly == b->m_activeScreenOnly && strcmp(a->m_screensBuffer, b->m_screensBuffer) == 0
   );
 }
 

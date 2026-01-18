@@ -156,11 +156,21 @@
      <property name="title">
       <string>Computers to receive this event</string>
      </property>
-     <layout class="QHBoxLayout" name="_3">
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QListWidget" name="listScreens">
         <property name="sizeAdjustPolicy">
          <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkActiveScreenOnly">
+        <property name="text">
+         <string>Only when one of these computers is active</string>
+        </property>
+        <property name="toolTip">
+         <string>When checked, this action will only execute when the active screen matches one of the selected computers above</string>
         </property>
        </widget>
       </item>

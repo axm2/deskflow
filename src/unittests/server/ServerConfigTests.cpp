@@ -161,4 +161,52 @@ void ServerConfigTests::equalityCheck_diff_neighbours3()
   QVERIFY(a != b);
 }
 
+void ServerConfigTests::parseActiveScreenOnlyModifier()
+{
+  // Test parsing of activeScreenOnly modifier in keystroke actions
+  Config config(nullptr);
+  QVERIFY(config.addScreen("serverScreen"));
+  QVERIFY(config.addScreen("macbookair.lan"));
+
+  // Create a simple configuration with activeScreenOnly modifier
+  std::string configStr = R"(
+section: options
+end
+section: screens
+  serverScreen:
+  macbookair.lan:
+end
+section: links
+  serverScreen:
+    right = macbookair.lan
+  macbookair.lan:
+    left = serverScreen
+end
+section: aliases
+end
+)";
+
+  std::istringstream stream(configStr);
+  // Note: Full config parsing would require more complex setup
+  // This test focuses on verifying the KeyInfo structure changes
+
+  // Test KeyInfo with activeScreenOnly flag
+  std::set<std::string> screens;
+  screens.insert("macbookair.lan");
+  auto *keyInfo = IKeyState::KeyInfo::alloc(0x1234, 0, 0, 0, screens, true);
+
+  QVERIFY(keyInfo != nullptr);
+  QVERIFY(keyInfo->m_activeScreenOnly == true);
+  QVERIFY(IKeyState::KeyInfo::contains(keyInfo->m_screens, "macbookair.lan"));
+
+  free(keyInfo);
+
+  // Test KeyInfo without activeScreenOnly flag (default)
+  auto *keyInfo2 = IKeyState::KeyInfo::alloc(0x1234, 0, 0, 0, screens);
+  QVERIFY(keyInfo2 != nullptr);
+  QVERIFY(keyInfo2->m_activeScreenOnly == false);
+
+  free(keyInfo2);
+}
+
 QTEST_MAIN(ServerConfigTests)

@@ -28,6 +28,7 @@ inline static const QString LockToScreen = QStringLiteral("lockCursorToScreen");
 inline static const QString ActiveOnRelease = QStringLiteral("activeOnRelease");
 inline static const QString HasScreens = QStringLiteral("hasScreens");
 inline static const QString RestartServer = QStringLiteral("restartServer");
+inline static const QString ActiveScreenOnly = QStringLiteral("activeScreenOnly");
 } // namespace SettingsKeys
 
 class Action
@@ -106,6 +107,10 @@ public:
   {
     return m_restartServer;
   }
+  bool activeScreenOnly() const
+  {
+    return m_activeScreenOnly;
+  }
 
   bool operator==(const Action &a) const = default;
 
@@ -150,6 +155,10 @@ protected:
   {
     m_restartServer = b;
   }
+  void setActiveScreenOnly(bool b)
+  {
+    m_activeScreenOnly = b;
+  }
 
 private:
   KeySequence m_keySequence;
@@ -160,7 +169,8 @@ private:
   int m_lockCursorMode = static_cast<int>(LockCursorMode::toggle);
   bool m_activeOnRelease = false;
   bool m_hasScreens = false;
-  bool m_restartServer;
+  bool m_restartServer = false;
+  bool m_activeScreenOnly = false;
 
   inline static const QString m_commandTemplate = QStringLiteral("(%1)");
   inline static const QStringList m_actionTypeNames{
