@@ -208,6 +208,7 @@ bool Server::setConfig(const ServerConfig &config)
     InputFilter::Rule rule(new InputFilter::KeystrokeCondition(m_events, key));
     rule.adoptAction(new InputFilter::LockCursorToScreenAction(m_events), true);
     m_inputFilter->addFilterRule(rule);
+    std::free(key);
   }
 
   // tell primary screen about reconfiguration
