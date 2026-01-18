@@ -195,7 +195,7 @@ end
 
   // Parse the config - this should succeed without throwing
   try {
-    config.read(configStream);
+    configStream >> config;
     // Verify screens were added
     QVERIFY(config.isScreen("Server"));
     QVERIFY(config.isScreen("Mac-Mini"));
