@@ -209,8 +209,9 @@ void EiScreen::warpCursor(int32_t x, int32_t y)
   m_cursorY = y;
 }
 
-std::uint32_t EiScreen::registerHotKey(KeyID key, KeyModifierMask mask)
+std::uint32_t EiScreen::registerHotKey(KeyID key, KeyModifierMask mask, bool registerGlobalHotkey)
 {
+  (void)registerGlobalHotkey; // Unused for Ei implementation
   static std::uint32_t next_id;
   std::uint32_t id = std::min(++next_id, 1u);
 
@@ -226,8 +227,9 @@ std::uint32_t EiScreen::registerHotKey(KeyID key, KeyModifierMask mask)
   return id;
 }
 
-void EiScreen::unregisterHotKey(uint32_t id)
+void EiScreen::unregisterHotKey(uint32_t id, bool unregisterGlobalHotkey)
 {
+  (void)unregisterGlobalHotkey; // Unused for Ei implementation
   for (auto &[key, set] : m_hotkeys) {
     (void)key;
     if (set.removeById(id)) {

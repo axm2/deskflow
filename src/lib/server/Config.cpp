@@ -924,13 +924,18 @@ InputFilter::Condition *
 Config::parseCondition(const ConfigReadContext &s, const std::string &name, const std::vector<std::string> &args)
 {
   if (name == "keystroke") {
-    if (args.size() != 1) {
-      throw ServerConfigReadException(s, "syntax for condition: keystroke(modifiers+key)");
+    if (args.size() < 1 || args.size() > 2) {
+      throw ServerConfigReadException(s, "syntax for condition: keystroke(modifiers+key[,options])");
     }
 
     IPlatformScreen::KeyInfo *keyInfo = s.parseKeystroke(args[0]);
+    bool disableGlobalHotkeyRegister = false;
 
-    return new InputFilter::KeystrokeCondition(m_events, keyInfo);
+    if (args.size() > 1) {
+      parseKeystrokeConditionOptions(s, args[1], disableGlobalHotkeyRegister);
+    }
+
+    return new InputFilter::KeystrokeCondition(m_events, keyInfo, disableGlobalHotkeyRegister);
   }
 
   if (name == "mousebutton") {
@@ -969,8 +974,8 @@ void Config::parseAction(
   InputFilter::Action *action;
 
   if (name == "keystroke" || name == "keyDown" || name == "keyUp") {
-    if (args.size() < 1 || args.size() > 2) {
-      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens])");
+    if (args.size() < 1 || args.size() > 3) {
+      throw ServerConfigReadException(s, "syntax for action: keystroke(modifiers+key[,screens[,options]])");
     }
 
     IPlatformScreen::KeyInfo *keyInfo;
@@ -979,7 +984,11 @@ void Config::parseAction(
     } else {
       std::set<std::string> screens;
       parseScreens(s, args[1], screens);
-      keyInfo = s.parseKeystroke(args[0], screens);
+      bool activeScreenOnly = false;
+      if (args.size() > 2) {
+        parseKeystrokeActionOptions(s, args[2], activeScreenOnly);
+      }
+      keyInfo = s.parseKeystroke(args[0], screens, activeScreenOnly);
     }
 
     if (name == "keystroke") {
@@ -1183,6 +1192,26 @@ void Config::parseScreens(const ConfigReadContext &c, const std::string_view &s,
 
     // next
     i = j + 1;
+  }
+}
+
+void Config::parseKeystrokeConditionOptions(
+    const ConfigReadContext &c, const std::string &s, bool &disableGlobalHotkeyRegister
+) const
+{
+  if (s == "disableGlobalHotkeyRegister") {
+    disableGlobalHotkeyRegister = true;
+  } else {
+    disableGlobalHotkeyRegister = false;
+  }
+}
+
+void Config::parseKeystrokeActionOptions(const ConfigReadContext &c, const std::string &s, bool &activeScreenOnly) const
+{
+  if (s == "activeScreenOnly") {
+    activeScreenOnly = true;
+  } else {
+    activeScreenOnly = false;
   }
 }
 
@@ -2001,6 +2030,14 @@ IPlatformScreen::KeyInfo *ConfigReadContext::parseKeystroke(const std::string &k
 IPlatformScreen::KeyInfo *
 ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<std::string> &screens) const
 {
+  return parseKeystroke(keystroke, screens, false);
+}
+
+IPlatformScreen::KeyInfo *
+ConfigReadContext::parseKeystroke(
+    const std::string &keystroke, const std::set<std::string> &screens, bool activeScreenOnly
+) const
+{
   std::string s = keystroke;
 
   KeyModifierMask mask;
@@ -2017,7 +2054,7 @@ ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<s
     throw ServerConfigReadException(*this, "missing key and/or modifiers in keystroke");
   }
 
-  return IPlatformScreen::KeyInfo::alloc(key, mask, 0, 0, screens);
+  return IPlatformScreen::KeyInfo::alloc(key, mask, 0, 0, screens, activeScreenOnly);
 }
 
 IPlatformScreen::ButtonInfo ConfigReadContext::parseMouse(const std::string &mouse) const

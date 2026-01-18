@@ -25,14 +25,14 @@ void PrimaryClient::reconfigure(uint32_t activeSides)
   m_screen->reconfigure(activeSides);
 }
 
-uint32_t PrimaryClient::registerHotKey(KeyID key, KeyModifierMask mask)
+uint32_t PrimaryClient::registerHotKey(KeyID key, KeyModifierMask mask, bool registerGlobalHotkey)
 {
-  return m_screen->registerHotKey(key, mask);
+  return m_screen->registerHotKey(key, mask, registerGlobalHotkey);
 }
 
-void PrimaryClient::unregisterHotKey(uint32_t id)
+void PrimaryClient::unregisterHotKey(uint32_t id, bool unregisterGlobalHotkey)
 {
-  m_screen->unregisterHotKey(id);
+  m_screen->unregisterHotKey(id, unregisterGlobalHotkey);
 }
 
 void PrimaryClient::fakeInputBegin()
@@ -142,11 +142,7 @@ void PrimaryClient::setClipboardDirty(ClipboardID id, bool dirty)
 void PrimaryClient::keyDown(KeyID key, KeyModifierMask mask, KeyButton button, const std::string &)
 {
   if (m_fakeInputCount > 0) {
-    // XXX -- don't forward keystrokes to primary screen for now
-    (void)key;
-    (void)mask;
-    (void)button;
-    //        m_screen->keyDown(key, mask, button);
+    m_screen->keyDown(key, mask, button);
   }
 }
 
@@ -158,11 +154,7 @@ void PrimaryClient::keyRepeat(KeyID, KeyModifierMask, int32_t, KeyButton, const 
 void PrimaryClient::keyUp(KeyID key, KeyModifierMask mask, KeyButton button)
 {
   if (m_fakeInputCount > 0) {
-    // XXX -- don't forward keystrokes to primary screen for now
-    (void)key;
-    (void)mask;
-    (void)button;
-    //        m_screen->keyUp(key, mask, button);
+    m_screen->keyUp(key, mask, button);
   }
 }
 

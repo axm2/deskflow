@@ -34,7 +34,19 @@ void InputFilter::Condition::disablePrimary(PrimaryClient *)
 InputFilter::KeystrokeCondition::KeystrokeCondition(IEventQueue *events, IPlatformScreen::KeyInfo *info)
     : m_key(info->m_key),
       m_mask(info->m_mask),
-      m_events(events)
+      m_events(events),
+      m_disableGlobalHotkeyRegister(false)
+{
+  free(info);
+}
+
+InputFilter::KeystrokeCondition::KeystrokeCondition(
+    IEventQueue *events, IPlatformScreen::KeyInfo *info, bool disableGlobalHotkeyRegister
+)
+    : m_key(info->m_key),
+      m_mask(info->m_mask),
+      m_events(events),
+      m_disableGlobalHotkeyRegister(disableGlobalHotkeyRegister)
 {
   free(info);
 }
@@ -42,7 +54,19 @@ InputFilter::KeystrokeCondition::KeystrokeCondition(IEventQueue *events, IPlatfo
 InputFilter::KeystrokeCondition::KeystrokeCondition(IEventQueue *events, KeyID key, KeyModifierMask mask)
     : m_key(key),
       m_mask(mask),
-      m_events(events)
+      m_events(events),
+      m_disableGlobalHotkeyRegister(false)
+{
+  // do nothing
+}
+
+InputFilter::KeystrokeCondition::KeystrokeCondition(
+    IEventQueue *events, KeyID key, KeyModifierMask mask, bool disableGlobalHotkeyRegister
+)
+    : m_key(key),
+      m_mask(mask),
+      m_events(events),
+      m_disableGlobalHotkeyRegister(disableGlobalHotkeyRegister)
 {
   // do nothing
 }
@@ -59,7 +83,7 @@ KeyModifierMask InputFilter::KeystrokeCondition::getMask() const
 
 InputFilter::Condition *InputFilter::KeystrokeCondition::clone() const
 {
-  return new KeystrokeCondition(m_events, m_key, m_mask);
+  return new KeystrokeCondition(m_events, m_key, m_mask, m_disableGlobalHotkeyRegister);
 }
 
 std::string InputFilter::KeystrokeCondition::format() const
@@ -91,12 +115,12 @@ InputFilter::FilterStatus InputFilter::KeystrokeCondition::match(const Event &ev
 
 void InputFilter::KeystrokeCondition::enablePrimary(PrimaryClient *primary)
 {
-  m_id = primary->registerHotKey(m_key, m_mask);
+  m_id = primary->registerHotKey(m_key, m_mask, !m_disableGlobalHotkeyRegister);
 }
 
 void InputFilter::KeystrokeCondition::disablePrimary(PrimaryClient *primary)
 {
-  primary->unregisterHotKey(m_id);
+  primary->unregisterHotKey(m_id, !m_disableGlobalHotkeyRegister);
   m_id = 0;
 }
 

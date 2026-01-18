@@ -188,13 +188,13 @@ public:
   Registers a system-wide hotkey for key \p key with modifiers \p mask.
   Returns an id used to unregister the hotkey.
   */
-  uint32_t registerHotKey(KeyID key, KeyModifierMask mask);
+  uint32_t registerHotKey(KeyID key, KeyModifierMask mask, bool registerGlobalHotkey);
 
   //! Unregister a system hotkey
   /*!
   Unregisters a previously registered hot key.
   */
-  void unregisterHotKey(uint32_t id);
+  void unregisterHotKey(uint32_t id, bool unregisterGlobalHotkey);
 
   //! Prepare to synthesize input on primary screen
   /*!

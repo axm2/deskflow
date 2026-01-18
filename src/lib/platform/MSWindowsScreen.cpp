@@ -538,7 +538,7 @@ void MSWindowsScreen::saveMousePosition(int32_t x, int32_t y)
   LOG_DEBUG5("saved mouse position for next delta: %+d,%+d", x, y);
 }
 
-uint32_t MSWindowsScreen::registerHotKey(KeyID key, KeyModifierMask mask)
+uint32_t MSWindowsScreen::registerHotKey(KeyID key, KeyModifierMask mask, bool registerGlobalHotkey)
 {
   // only allow certain modifiers
   if ((mask & ~(KeyModifierShift | KeyModifierControl | KeyModifierAlt | KeyModifierSuper)) != 0) {
@@ -587,11 +587,11 @@ uint32_t MSWindowsScreen::registerHotKey(KeyID key, KeyModifierMask mask)
   }
 
   // if this hot key has modifiers only then we'll handle it specially
-  bool err;
+  bool err = false;
   if (key == kKeyNone) {
     // check if already registered
     err = (m_hotKeyToIDMap.count(HotKeyItem(vk, modifiers)) > 0);
-  } else {
+  } else if (registerGlobalHotkey) {
     // register with OS
     err = (RegisterHotKey(nullptr, id, modifiers, vk) == 0);
   }
@@ -615,7 +615,7 @@ uint32_t MSWindowsScreen::registerHotKey(KeyID key, KeyModifierMask mask)
   return id;
 }
 
-void MSWindowsScreen::unregisterHotKey(uint32_t id)
+void MSWindowsScreen::unregisterHotKey(uint32_t id, bool unregisterGlobalHotkey)
 {
   // look up hotkey
   HotKeyMap::iterator i = m_hotKeys.find(id);
@@ -624,11 +624,9 @@ void MSWindowsScreen::unregisterHotKey(uint32_t id)
   }
 
   // unregister with OS
-  bool err;
-  if (i->second.getVirtualKey() != 0) {
+  bool err = false;
+  if (unregisterGlobalHotkey && i->second.getVirtualKey() != 0) {
     err = !UnregisterHotKey(nullptr, id);
-  } else {
-    err = false;
   }
   if (err) {
     LOG_WARN("failed to unregister hotkey id=%d", id);

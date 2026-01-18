@@ -463,6 +463,9 @@ private:
   );
 
   void parseScreens(const ConfigReadContext &, const std::string_view &, std::set<std::string> &screens) const;
+  void parseKeystrokeConditionOptions(const ConfigReadContext &c, const std::string &s, bool &disableGlobalHotkeyRegister)
+      const;
+  void parseKeystrokeActionOptions(const ConfigReadContext &c, const std::string &s, bool &activeScreenOnly) const;
   static const char *getOptionName(OptionID);
   static std::string getOptionValue(OptionID, OptionValue);
 
@@ -506,6 +509,9 @@ public:
   ) const;
   IPlatformScreen::KeyInfo *parseKeystroke(const std::string &keystroke) const;
   IPlatformScreen::KeyInfo *parseKeystroke(const std::string &keystroke, const std::set<std::string> &screens) const;
+  IPlatformScreen::KeyInfo *parseKeystroke(
+      const std::string &keystroke, const std::set<std::string> &screens, bool activeScreenOnly
+  ) const;
   IPlatformScreen::ButtonInfo parseMouse(const std::string &mouse) const;
   KeyModifierMask parseModifier(const std::string &modifiers) const;
   std::istream &getStream() const

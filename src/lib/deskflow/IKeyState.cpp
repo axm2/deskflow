@@ -30,6 +30,7 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(KeyID id, KeyModifierMask mask, Ke
   info->m_mask = mask;
   info->m_button = button;
   info->m_count = count;
+  info->m_activeScreenOnly = false;
   info->m_screens = nullptr;
   info->m_screensBuffer[0] = '\0';
   return info;
@@ -37,6 +38,14 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(KeyID id, KeyModifierMask mask, Ke
 
 IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
     KeyID id, KeyModifierMask mask, KeyButton button, int32_t count, const std::set<std::string> &destinations
+)
+{
+  return alloc(id, mask, button, count, destinations, false);
+}
+
+IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
+    KeyID id, KeyModifierMask mask, KeyButton button, int32_t count, const std::set<std::string> &destinations,
+    bool activeScreenOnly
 )
 {
   std::string screens = join(destinations);
@@ -54,6 +63,7 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
   info->m_mask = mask;
   info->m_button = button;
   info->m_count = count;
+  info->m_activeScreenOnly = activeScreenOnly;
   info->m_screens = info->m_screensBuffer;
   std::copy(buffer, buffer + screens.size() + 1, info->m_screensBuffer);
   return info;
@@ -74,6 +84,7 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(const KeyInfo &x)
   info->m_mask = x.m_mask;
   info->m_button = x.m_button;
   info->m_count = x.m_count;
+  info->m_activeScreenOnly = x.m_activeScreenOnly;
   info->m_screens = x.m_screens ? info->m_screensBuffer : nullptr;
   memcpy(info->m_screensBuffer, x.m_screensBuffer, bufferLen + 1);
   return info;
