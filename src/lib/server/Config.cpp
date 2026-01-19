@@ -930,7 +930,11 @@ Config::parseCondition(const ConfigReadContext &s, const std::string &name, cons
 
     IPlatformScreen::KeyInfo *keyInfo = s.parseKeystroke(args[0]);
 
-    return new InputFilter::KeystrokeCondition(m_events, keyInfo);
+    // Ensure that the KeyInfo owned by KeystrokeCondition is allocated with new,
+    // avoiding mismatches if parseKeystroke uses a different allocation strategy.
+    auto *ownedKeyInfo = new IPlatformScreen::KeyInfo(*keyInfo);
+
+    return new InputFilter::KeystrokeCondition(m_events, ownedKeyInfo);
   }
 
   if (name == "mousebutton") {
