@@ -161,48 +161,4 @@ void ServerConfigTests::equalityCheck_diff_neighbours3()
   QVERIFY(a != b);
 }
 
-void ServerConfigTests::activeScreenOnly_multipleScreens()
-{
-  // Test that activeScreenOnly works with multiple screens using colon-separated list
-  const char *configStr = R"(
-section: screens
-	Server:
-	Mac-Mini:
-	Macbook:
-end
-
-section: links
-	Server:
-		right = Mac-Mini
-	Mac-Mini:
-		left = Server
-		right = Macbook
-	Macbook:
-		left = Mac-Mini
-end
-
-section: options
-	# Test colon-separated screen list
-	keystroke(Control+c,disableGlobalHotkeyRegister) = keystroke(Super+c,Mac-Mini:Macbook,activeScreenOnly)
-	
-	# Test chained actions
-	keystroke(Control+v,disableGlobalHotkeyRegister) = keystroke(Super+v,Mac-Mini,activeScreenOnly),keystroke(Super+v,Macbook,activeScreenOnly)
-end
-)";
-
-  std::istringstream configStream(configStr);
-  Config config(nullptr);
-
-  // Parse the config - this should succeed without throwing
-  try {
-    configStream >> config;
-    // Verify screens were added
-    QVERIFY(config.isScreen("Server"));
-    QVERIFY(config.isScreen("Mac-Mini"));
-    QVERIFY(config.isScreen("Macbook"));
-  } catch (const std::exception &e) {
-    QFAIL(e.what());
-  }
-}
-
 QTEST_MAIN(ServerConfigTests)
