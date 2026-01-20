@@ -205,7 +205,7 @@ bool Server::setConfig(const ServerConfig &config)
   // ScrollLock as a hotkey.
   if (!m_disableLockToScreen && !m_config->hasLockToScreenAction()) {
     IPlatformScreen::KeyInfo *key = IPlatformScreen::KeyInfo::alloc(kKeyScrollLock, 0, 0, 0);
-    InputFilter::Rule rule(new InputFilter::KeystrokeCondition(m_events, key));
+    InputFilter::Rule rule(new InputFilter::KeystrokeCondition(m_events, key, true));
     rule.adoptAction(new InputFilter::LockCursorToScreenAction(m_events), true);
     m_inputFilter->addFilterRule(rule);
   }
@@ -1228,13 +1228,13 @@ void Server::handleKeyDownEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
   auto lang = AppUtil::instance().getCurrentLanguageCode();
-  onKeyDown(info->m_key, info->m_mask, info->m_button, lang, info->m_screens);
+  onKeyDown(info->m_key, info->m_mask, info->m_button, lang, info->m_screens, info->m_activeScreenOnly);
 }
 
 void Server::handleKeyUpEvent(const Event &event)
 {
   auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
-  onKeyUp(info->m_key, info->m_mask, info->m_button, info->m_screens);
+  onKeyUp(info->m_key, info->m_mask, info->m_button, info->m_screens, info->m_activeScreenOnly);
 }
 
 void Server::handleKeyRepeatEvent(const Event &event)
@@ -1531,7 +1531,10 @@ void Server::onScreensaver(bool activated)
   }
 }
 
-void Server::onKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang, const char *screens)
+void Server::onKeyDown(
+    KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang, const char *screens,
+    bool activeScreenOnly
+)
 {
   LOG_DEBUG1("onKeyDown id=%d mask=0x%04x button=0x%04x lang=%s", id, mask, button, lang.c_str());
   assert(m_active != nullptr);
@@ -1539,6 +1542,14 @@ void Server::onKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const s
   // relay
   if (!m_keyboardBroadcasting && IKeyState::KeyInfo::isDefault(screens)) {
     m_active->keyDown(id, mask, button, lang);
+  } else if (activeScreenOnly) {
+    auto activeName = m_active->getName();
+    if (IKeyState::KeyInfo::contains(screens, activeName)) {
+      // This won't work on the primary client if the action has the same keystroke as the condition.
+      // Unlike other clients, the primary client registers the original keystroke with the OS as a hotkey to block
+      // other apps from handling them, which also stops Deskflow from being able to create a fake event for them.
+      m_active->keyDown(id, mask, button, lang);
+    }
   } else {
     if (!screens && m_keyboardBroadcasting) {
       screens = m_keyboardBroadcastingScreens.c_str();
@@ -1554,7 +1565,7 @@ void Server::onKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const s
   }
 }
 
-void Server::onKeyUp(KeyID id, KeyModifierMask mask, KeyButton button, const char *screens)
+void Server::onKeyUp(KeyID id, KeyModifierMask mask, KeyButton button, const char *screens, bool activeScreenOnly)
 {
   LOG_DEBUG1("onKeyUp id=%d mask=0x%04x button=0x%04x", id, mask, button);
   assert(m_active != nullptr);
@@ -1562,6 +1573,14 @@ void Server::onKeyUp(KeyID id, KeyModifierMask mask, KeyButton button, const cha
   // relay
   if (!m_keyboardBroadcasting && IKeyState::KeyInfo::isDefault(screens)) {
     m_active->keyUp(id, mask, button);
+  } else if (activeScreenOnly) {
+    auto activeName = m_active->getName();
+    if (IKeyState::KeyInfo::contains(screens, activeName)) {
+      // This won't work on the primary client if the action has the same keystroke as the condition.
+      // Unlike other clients, the primary client registers the original keystroke with the OS as a hotkey to block
+      // other apps from handling them, which also stops Deskflow from being able to create a fake event for them.
+      m_active->keyUp(id, mask, button);
+    }
   } else {
     if (!screens && m_keyboardBroadcasting) {
       screens = m_keyboardBroadcastingScreens.c_str();

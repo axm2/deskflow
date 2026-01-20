@@ -37,6 +37,10 @@ public:
   {
     return m_actions;
   }
+  bool disableGlobalHotkeyRegister() const
+  {
+    return m_disableGlobalHotkeyRegister;
+  }
 
   void loadSettings(QSettings &settings);
   void saveSettings(QSettings &settings) const;
@@ -56,11 +60,17 @@ protected:
   {
     return m_actions;
   }
+  void setDisableGlobalHotkeyRegister(bool b)
+  {
+    m_disableGlobalHotkeyRegister = b;
+  }
 
 private:
   KeySequence m_keySequence = {};
   ActionList m_actions = {};
+  bool m_disableGlobalHotkeyRegister = false;
   inline static const QString kSectionActions = QStringLiteral("actions");
+  inline static const QString kDisableGlobalHotkeyRegister = QStringLiteral("disableGlobalHotkeyRegister");
   inline static const QString kMousebutton = QStringLiteral("mousebutton(%1)");
   inline static const QString kKeystroke = QStringLiteral("keystroke(%1)");
 };

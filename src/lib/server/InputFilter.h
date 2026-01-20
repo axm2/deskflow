@@ -52,7 +52,9 @@ public:
   {
   public:
     KeystrokeCondition(IEventQueue *events, IPlatformScreen::KeyInfo *);
+    KeystrokeCondition(IEventQueue *events, IPlatformScreen::KeyInfo *, bool disableGlobalHotkeyRegister);
     KeystrokeCondition(IEventQueue *events, KeyID key, KeyModifierMask mask);
+    KeystrokeCondition(IEventQueue *events, KeyID key, KeyModifierMask mask, bool disableGlobalHotkeyRegister);
     ~KeystrokeCondition() override = default;
 
     KeyID getKey() const;
@@ -70,6 +72,7 @@ public:
     KeyID m_key;
     KeyModifierMask m_mask;
     IEventQueue *m_events;
+    bool m_disableGlobalHotkeyRegister = false;
   };
 
   // MouseButtonCondition

@@ -48,8 +48,8 @@ public:
   void reconfigure(uint32_t activeSides) override;
   uint32_t activeSides() override;
   void warpCursor(int32_t x, int32_t y) override;
-  uint32_t registerHotKey(KeyID key, KeyModifierMask mask) override;
-  void unregisterHotKey(uint32_t id) override;
+  uint32_t registerHotKey(KeyID key, KeyModifierMask mask, bool registerGlobalHotkey) override;
+  void unregisterHotKey(uint32_t id, bool unregisterGlobalHotkey) override;
   void fakeInputBegin() override;
   void fakeInputEnd() override;
   int32_t getJumpZoneSize() const override;

@@ -25,11 +25,12 @@ IKeyState::IKeyState(const IEventQueue *)
 
 IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(KeyID id, KeyModifierMask mask, KeyButton button, int32_t count)
 {
-  auto *info = new KeyInfo();
+  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo));
   info->m_key = id;
   info->m_mask = mask;
   info->m_button = button;
   info->m_count = count;
+  info->m_activeScreenOnly = false;
   info->m_screens = nullptr;
   info->m_screensBuffer[0] = '\0';
   return info;
@@ -39,21 +40,25 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
     KeyID id, KeyModifierMask mask, KeyButton button, int32_t count, const std::set<std::string> &destinations
 )
 {
+  return alloc(id, mask, button, count, destinations, false);
+}
+
+IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(
+    KeyID id, KeyModifierMask mask, KeyButton button, int32_t count, const std::set<std::string> &destinations,
+    bool activeScreenOnly
+)
+{
   std::string screens = join(destinations);
   const char *buffer = screens.c_str();
 
-  // build structure
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
+  // build structure - allocate extra space for the screens string
   auto *info = (KeyInfo *)malloc(sizeof(KeyInfo) + screens.size());
-#else
-  auto *info = new KeyInfo();
-#endif
 
   info->m_key = id;
   info->m_mask = mask;
   info->m_button = button;
   info->m_count = count;
+  info->m_activeScreenOnly = activeScreenOnly;
   info->m_screens = info->m_screensBuffer;
   std::copy(buffer, buffer + screens.size() + 1, info->m_screensBuffer);
   return info;
@@ -63,17 +68,14 @@ IKeyState::KeyInfo *IKeyState::KeyInfo::alloc(const KeyInfo &x)
 {
   auto bufferLen = strnlen(x.m_screensBuffer, SIZE_MAX);
 
-#if SYSAPI_WIN32
-  // On windows we use malloc to avoid random test failures
-  auto info = (KeyInfo *)malloc(sizeof(KeyInfo) + bufferLen);
-#else
-  auto *info = new KeyInfo();
-#endif
+  // allocate extra space for the screens string
+  auto *info = (KeyInfo *)malloc(sizeof(KeyInfo) + bufferLen);
 
   info->m_key = x.m_key;
   info->m_mask = x.m_mask;
   info->m_button = x.m_button;
   info->m_count = x.m_count;
+  info->m_activeScreenOnly = x.m_activeScreenOnly;
   info->m_screens = x.m_screens ? info->m_screensBuffer : nullptr;
   memcpy(info->m_screensBuffer, x.m_screensBuffer, bufferLen + 1);
   return info;

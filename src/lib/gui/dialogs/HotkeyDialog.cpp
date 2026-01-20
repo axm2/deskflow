@@ -16,6 +16,7 @@ HotkeyDialog::HotkeyDialog(QWidget *parent, Hotkey &hotkey)
   ui->setupUi(this);
 
   ui->m_pKeySequenceWidgetHotkey->setText(m_Hotkey.text());
+  ui->m_pCheckBoxDisableGlobalHotkeyRegister->setChecked(m_Hotkey.disableGlobalHotkeyRegister());
 }
 
 HotkeyDialog::~HotkeyDialog() = default;
@@ -26,6 +27,7 @@ void HotkeyDialog::accept()
     return;
 
   hotkey().setKeySequence(sequenceWidget()->keySequence());
+  hotkey().setDisableGlobalHotkeyRegister(ui->m_pCheckBoxDisableGlobalHotkeyRegister->isChecked());
   QDialog::accept();
 }
 

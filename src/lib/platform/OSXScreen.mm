@@ -301,7 +301,7 @@ void OSXScreen::getCursorCenter(int32_t &x, int32_t &y) const
   y = m_yCenter;
 }
 
-uint32_t OSXScreen::registerHotKey(KeyID key, KeyModifierMask mask)
+uint32_t OSXScreen::registerHotKey(KeyID key, KeyModifierMask mask, bool registerGlobalHotkey)
 {
   // get mac virtual key and modifier mask matching deskflow key and mask
   uint32_t macKey, macMask;
@@ -321,7 +321,7 @@ uint32_t OSXScreen::registerHotKey(KeyID key, KeyModifierMask mask)
 
   // if this hot key has modifiers only then we'll handle it specially
   EventHotKeyRef ref = nullptr;
-  bool okay;
+  bool okay = true;
   if (key == kKeyNone) {
     if (m_modifierHotKeys.count(mask) > 0) {
       // already registered
@@ -331,9 +331,11 @@ uint32_t OSXScreen::registerHotKey(KeyID key, KeyModifierMask mask)
       okay = true;
     }
   } else {
-    EventHotKeyID hkid = {'SNRG', (uint32_t)id};
-    OSStatus status = RegisterEventHotKey(macKey, macMask, hkid, GetApplicationEventTarget(), 0, &ref);
-    okay = (status == noErr);
+    if (registerGlobalHotkey) {
+      EventHotKeyID hkid = {'SNRG', (uint32_t)id};
+      OSStatus status = RegisterEventHotKey(macKey, macMask, hkid, GetApplicationEventTarget(), 0, &ref);
+      okay = (status == noErr);
+    }
     m_hotKeyToIDMap[HotKeyItem(macKey, macMask)] = id;
   }
 
@@ -354,7 +356,7 @@ uint32_t OSXScreen::registerHotKey(KeyID key, KeyModifierMask mask)
   return id;
 }
 
-void OSXScreen::unregisterHotKey(uint32_t id)
+void OSXScreen::unregisterHotKey(uint32_t id, bool unregisterGlobalHotkey)
 {
   // look up hotkey
   HotKeyMap::iterator i = m_hotKeys.find(id);
@@ -363,9 +365,11 @@ void OSXScreen::unregisterHotKey(uint32_t id)
   }
 
   // unregister with OS
-  bool okay;
+  bool okay = true;
   if (i->second.getRef() != nullptr) {
-    okay = (UnregisterEventHotKey(i->second.getRef()) == noErr);
+    if (unregisterGlobalHotkey) {
+      okay = (UnregisterEventHotKey(i->second.getRef()) == noErr);
+    }
   } else {
     okay = false;
     // XXX -- this is inefficient

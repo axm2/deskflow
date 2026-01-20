@@ -34,6 +34,11 @@ QString Action::text() const
         commandArgs.append(QStringLiteral(",%1").arg(screenList));
       } else
         commandArgs.append(QStringLiteral(",*"));
+
+      // Add activeScreenOnly option if set
+      if (activeScreenOnly()) {
+        commandArgs.append(QStringLiteral(",activeScreenOnly"));
+      }
     }
     text.append(m_commandTemplate.arg(commandArgs));
   } break;
@@ -76,6 +81,7 @@ void Action::loadSettings(QSettings &settings)
   setActiveOnRelease(settings.value(SettingsKeys::ActiveOnRelease, false).toBool());
   setHaveScreens(settings.value(SettingsKeys::HasScreens, false).toBool());
   setRestartServer(settings.value(SettingsKeys::RestartServer, false).toBool());
+  setActiveScreenOnly(settings.value(SettingsKeys::ActiveScreenOnly, false).toBool());
 }
 
 void Action::saveSettings(QSettings &settings) const
@@ -96,6 +102,7 @@ void Action::saveSettings(QSettings &settings) const
   settings.setValue(SettingsKeys::ActiveOnRelease, activeOnRelease());
   settings.setValue(SettingsKeys::HasScreens, haveScreens());
   settings.setValue(SettingsKeys::RestartServer, restartServer());
+  settings.setValue(SettingsKeys::ActiveScreenOnly, activeScreenOnly());
 }
 
 QTextStream &operator<<(QTextStream &outStream, const Action &action)

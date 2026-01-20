@@ -123,13 +123,13 @@ public:
   the modifiers in any order or to require the user to press the given key
   last.
   */
-  virtual uint32_t registerHotKey(KeyID key, KeyModifierMask mask) = 0;
+  virtual uint32_t registerHotKey(KeyID key, KeyModifierMask mask, bool registerGlobalHotkey) = 0;
 
   //! Unregister a system hotkey
   /*!
   Unregisters a previously registered hot key.
   */
-  virtual void unregisterHotKey(uint32_t id) = 0;
+  virtual void unregisterHotKey(uint32_t id, bool unregisterGlobalHotkey) = 0;
 
   //! Prepare to synthesize input on primary screen
   /*!
